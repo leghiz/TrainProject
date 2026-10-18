@@ -33,6 +33,9 @@ public class WagonView : MonoBehaviour
     private Vector2Int gridSize;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
+    
+    public float Width => body.bounds.size.x;
+    public float Height => body.bounds.size.y;
 
     public void SetGridSize(Vector2Int size) => gridSize = size;
 
