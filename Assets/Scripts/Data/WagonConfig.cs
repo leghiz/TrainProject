@@ -1,7 +1,4 @@
 using UnityEngine;
-
-// Описание одного вида вагона (справочник, во время игры не меняется).
-// Создаётся в Project: ПКМ -> Create -> Train -> Wagon.
 [CreateAssetMenu(fileName = "Wagon", menuName = "Train/Wagon")]
 public class WagonConfig : ScriptableObject
 {
