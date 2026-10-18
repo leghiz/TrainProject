@@ -25,3 +25,4 @@ MonoBehaviour:
   outputResource: 2
   outputAmount: 1
   charge: 0
+  maxHp: 20

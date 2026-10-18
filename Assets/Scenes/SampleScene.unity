@@ -435,6 +435,7 @@ MonoBehaviour:
   trainView: {fileID: 540700458}
   stormConfig: {fileID: 11400000, guid: e941d362d7bb74c4289034fb1f554e7d, type: 2}
   stormPrefab: {fileID: 7776970728425128608, guid: ce5d978b22ce9a74a8c8f5a9e48c65d7, type: 3}
+  journeyConfig: {fileID: 11400000, guid: 2b6c1bfa2a9470947908907afac5a5f8, type: 2}
 --- !u!4 &979237767
 Transform:
   m_ObjectHideFlags: 0

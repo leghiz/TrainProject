@@ -47,6 +47,22 @@ public class TrainView : MonoBehaviour
             Place(wagon.transform, wagon.Width, wagon.Height, right);
             right -= wagon.Width + gap;
         }
+        ApplyFog(); 
+    }
+    
+    private bool fog;
+
+    public void SetFog(bool value)
+    {
+        fog = value;
+        ApplyFog();
+    }
+
+    private void ApplyFog()
+    {
+        var center = wagons.Count > 0 ? wagons[wagons.Count / 2] : null;
+        if (locomotive != null) locomotive.SetFogged(fog && center != null);
+        foreach (var wagon in wagons) wagon.SetFogged(fog && wagon != center);
     }
     
     public float CellsToX(float cellsBehindLocomotive)

@@ -20,13 +20,19 @@ public class WagonModel : IMachineHost
     public event Action<MachineModel> MachinePlaced;
     public event Action<MachineModel> MachineRemoved;
     public event Action ResourcesChanged; 
-
-    public WagonModel(WagonConfig config)
+    
+    public WagonCondition Condition { get; }
+    
+    public float Weight => Config.size.x * Config.size.y * (Condition != null ? Condition.weightMultiplier : 1f);
+    
+    public WagonModel(WagonConfig config, WagonCondition condition = null, float woodMultiplier = 1f, float scrapMultiplier = 1f)
     {
         Config = config;
+        Condition = condition;
         Hp = config.maxHp;
-        Wood = config.wood;
-        Scrap = config.scrap;
+        float resources = condition != null ? condition.resourceMultiplier : 1f;
+        Wood = Mathf.RoundToInt(config.wood * resources * woodMultiplier);
+        Scrap = Mathf.RoundToInt(config.scrap * resources * scrapMultiplier);
         grid = new MachineModel[config.size.x, config.size.y];
     }
 
@@ -93,9 +99,21 @@ public class WagonModel : IMachineHost
             machine.Tick(deltaTime, this, storage);
         }
         
+        RemoveFinishedMachines();
+    }
+    
+    public void DamageMachines(int damage)
+    {
+        if (damage <= 0) return;
+        foreach (var machine in machines) machine.Damage(damage);
+        RemoveFinishedMachines();
+    }
+    
+    private void RemoveFinishedMachines()
+    {
         for (int i = machines.Count - 1; i >= 0; i--)
         {
-            if (machines[i].IsUsedUp) RemoveMachine(machines[i]);
+            if (machines[i].IsFinished) RemoveMachine(machines[i]);
         }
     }
     
