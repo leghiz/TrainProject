@@ -31,6 +31,12 @@ public class MachineModel
     public bool HasCharge => Config.charge > 0;
     public bool IsUsedUp => HasCharge && ChargeLeft <= 0;
     public event Action<int> ChargeChanged;
+    
+    public int Hp { get; private set; }
+    public bool IsBroken => Hp <= 0;
+    public event Action<int> HpChanged;
+    
+    public bool IsFinished => IsUsedUp || IsBroken;
 
     private float timer;
 
@@ -39,6 +45,14 @@ public class MachineModel
         Config = config;
         Cell = cell;
         ChargeLeft = config.charge;
+        Hp = config.maxHp;
+    }
+
+    public void Damage(int amount)
+    {
+        if (IsBroken || amount <= 0) return;
+        Hp = Mathf.Max(0, Hp - amount);
+        HpChanged?.Invoke(Hp);
     }
     
     public void Tick(float deltaTime, IMachineHost host, ResourceStorageModel storage)
@@ -63,6 +77,19 @@ public class MachineModel
         Loaded += take;
         LoadedChanged?.Invoke(Loaded);
         return take;
+    }
+    
+    public int Fill(int amount)
+    {
+        if (!NeedsLoading || amount <= 0) return 0;
+
+        int room = Capacity > 0 ? Capacity - Loaded : int.MaxValue;
+        int put = Mathf.Min(amount, room);
+        if (put <= 0) return 0;
+
+        Loaded += put;
+        LoadedChanged?.Invoke(Loaded);
+        return put;
     }
     private bool Work(IMachineHost host, ResourceStorageModel storage)
     {

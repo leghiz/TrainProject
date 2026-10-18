@@ -35,6 +35,7 @@ public class LocomotiveModel : IMachineHost
         if (config.boiler != null) Boiler = new MachineModel(config.boiler, Vector2Int.zero);
         if (config.workbench != null) Workbench = new MachineModel(config.workbench, Vector2Int.zero);
         ApplyBoilerLevel();
+        Boiler?.Fill(config.startFuel);
     }
 
     public bool UpgradeBoiler()
@@ -52,11 +53,11 @@ public class LocomotiveModel : IMachineHost
         Boiler.IntervalOverride = Level.fuelInterval;
         Boiler.Capacity = Level.tank;
     }
-    
-    public void ApplyWear(float deltaTime)
+
+    public void ApplyWear(float deltaTime, float multiplier = 1f)
     {
         if (IsDestroyed || !HasLevels) return;
-        pendingWear += Level.wearPerSecond * deltaTime;
+        pendingWear += Level.wearPerSecond * multiplier * deltaTime;
         int whole = Mathf.FloorToInt(pendingWear);
         if (whole <= 0) return;
         pendingWear -= whole;

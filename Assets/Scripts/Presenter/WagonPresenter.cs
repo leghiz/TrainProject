@@ -17,6 +17,7 @@ public class WagonPresenter : IDisposable
         this.build = build;
 
         view.SetSprite(model.Config.sprite);
+        if (model.Condition != null) view.SetTint(model.Condition.tint);
         view.SetGridSize(model.Config.size);
         UpdateHp(model.Hp);
         foreach (var machine in model.Machines) ShowMachine(machine);

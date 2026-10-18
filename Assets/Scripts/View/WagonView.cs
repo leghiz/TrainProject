@@ -33,9 +33,19 @@ public class WagonView : MonoBehaviour
     private Vector2Int gridSize;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
+
+    public void SetTint(Color tint) => body.color = tint; 
     
-    public float Width => body.bounds.size.x;
-    public float Height => body.bounds.size.y;
+    public float Width => body.sprite.bounds.size.x * body.transform.localScale.x;
+    public float Height => body.sprite.bounds.size.y * body.transform.localScale.y;
+    
+    private bool fogged;
+
+    public void SetFogged(bool value)
+    {
+        fogged = value;
+        foreach (var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = !value;
+    }
 
     public void SetGridSize(Vector2Int size) => gridSize = size;
 
@@ -47,6 +57,7 @@ public class WagonView : MonoBehaviour
     {
         var machine = Instantiate(machinePrefab, transform);
         machine.transform.localPosition = AreaCenter(cell, size);
+        if (fogged) foreach (var r in machine.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
         return machine;
     }
 

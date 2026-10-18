@@ -53,6 +53,16 @@ public class TrainModel
         }
     }
     
+    public float Weight
+    {
+        get
+        {
+            float weight = 0f;
+            foreach (var wagon in wagons) weight += wagon.Weight;
+            return weight;
+        }
+    }
+
     public float Speed
     {
         get
@@ -61,22 +71,22 @@ public class TrainModel
 
             var level = Locomotive.Level;
             float speed = level.speed;
-            int cells = Cells;
-            if (cells > level.traction) speed *= (float)level.traction / cells;
+            float weight = Weight;
+            if (weight > level.traction) speed *= level.traction / weight;
             if (!Locomotive.HasFuel) speed *= Mathf.Max(0.05f, Locomotive.Config.noFuelSpeed);
             return speed;
         }
     }
     
-    public void Tick(float deltaTime, ResourceStorageModel storage)
+    public void Tick(float deltaTime, ResourceStorageModel storage, float wearMultiplier = 1f)
     {
         Locomotive.Tick(deltaTime, storage);
-        
+
         for (int i = wagons.Count - 1; i >= 0; i--)
         {
             if (i < wagons.Count) wagons[i].Tick(deltaTime, storage);
         }
 
-        Locomotive.ApplyWear(deltaTime);
+        Locomotive.ApplyWear(deltaTime, wearMultiplier);
     }
 }

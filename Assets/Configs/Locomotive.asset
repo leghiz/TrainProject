@@ -15,6 +15,7 @@ MonoBehaviour:
   displayName: "\u041B\u043E\u043A\u043E\u043C\u043E\u0442\u0438\u0432"
   sprite: {fileID: 21300000, guid: b04b8d6487a4f384b81be3e583376a59, type: 3}
   maxHp: 200
+  length: 5
   boiler: {fileID: 11400000, guid: 7303b1236bbef914cb1ee0049cd762fe, type: 2}
   workbench: {fileID: 11400000, guid: 3f24521e091b15846b45c70116d8d512, type: 2}
   boilerLevels:
@@ -34,3 +35,4 @@ MonoBehaviour:
     traction: 20
     fuelInterval: 3
   noFuelSpeed: 0.3
+  startFuel: 30

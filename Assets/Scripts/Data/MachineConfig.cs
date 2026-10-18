@@ -39,6 +39,10 @@ public class MachineConfig : ScriptableObject
 
     [Tooltip("Repair: сколько всего хп станок может отдать. Отдал всё — исчезает. 0 = без ограничения")]
     [Min(0)] public int charge;
+
+    [Header("Прочность")]
+    [Tooltip("Хп станка: дождь наносит урон станкам в вагонах, при 0 станок ломается и пропадает")]
+    [Min(1)] public int maxHp = 20;
 }
 
 public enum MachineAction

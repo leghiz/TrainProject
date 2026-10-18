@@ -33,15 +33,27 @@ public class LocomotiveView : MonoBehaviour
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
 
-    public float Width => body.bounds.size.x;
-    public float Height => body.bounds.size.y;
+    public float Width => body.sprite.bounds.size.x * body.transform.localScale.x;
+    public float Height => body.sprite.bounds.size.y * body.transform.localScale.y;
+
+    private bool fogged;
+
+    public void SetFogged(bool value)
+    {
+        fogged = value;
+        foreach (var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = !value;
+    }
 
     public void SetHp(float normalized) => hpFill.localScale = new Vector3(normalized, 1f, 1f);
 
     public void ShowDestroyed() => gameObject.SetActive(false);
     
-    public MachineView AddMachine(LocomotiveSlot slot) =>
-        Instantiate(machinePrefab, SlotAnchor(slot).position, Quaternion.identity, transform);
+    public MachineView AddMachine(LocomotiveSlot slot)
+    {
+        var machine = Instantiate(machinePrefab, SlotAnchor(slot).position, Quaternion.identity, transform);
+        if (fogged) foreach (var r in machine.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        return machine;
+    }
 
     public void RemoveMachine(MachineView machine) => Destroy(machine.gameObject);
 

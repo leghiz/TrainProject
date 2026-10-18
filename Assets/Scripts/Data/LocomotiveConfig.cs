@@ -23,6 +23,9 @@ public class LocomotiveConfig : ScriptableObject
 
     [Tooltip("Без топлива поезд едет медленнее: скорость умножается на это число. Не 0 — поезд никогда не стоит")]
     [Range(0.05f, 1f)] public float noFuelSpeed = 0.3f;
+
+    [Tooltip("Сколько дерева в коптильне в начале игры. Больше бака не влезет")]
+    [Min(0)] public int startFuel = 30;
 }
 
 [Serializable]

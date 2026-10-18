@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017f612b6f31ee144b292fccb71f41c2, type: 3}
+  m_Name: Journey
+  m_EditorClassIdentifier: Assembly-CSharp::JourneyConfig
+  nodeCount: 12
+  travelSeconds: 10
+  minNodesPerColumn: 2
+  maxNodesPerColumn: 3
+  stations:
+  - station: {fileID: 11400000, guid: 3ba0eca5f3391e947a3a0a4d48b7da5a, type: 2}
+    weight: 40
+  - station: {fileID: 11400000, guid: ddbc6f1af1add18468eef3714df85efd, type: 2}
+    weight: 15
+  - station: {fileID: 11400000, guid: b27a0f1e7c76cda4484658c92a4ed939, type: 2}
+    weight: 15
+  - station: {fileID: 11400000, guid: 76fb5e65a7f82204d9aad93f4836c982, type: 2}
+    weight: 15
+  - station: {fileID: 11400000, guid: 5ac9da1efd6297a4f97d55e268a326ab, type: 2}
+    weight: 15
+  finalStation: {fileID: 11400000, guid: cd569c669de956c45a2543bf809afa09, type: 2}
+  seed: 0

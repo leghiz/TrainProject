@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9841577b990a524383c4904632cb178, type: 3}
+  m_Name: Junkyard
+  m_EditorClassIdentifier: Assembly-CSharp::StationConfig
+  displayName: "\u0421\u0432\u0430\u043B\u043A\u0430"
+  icon: {fileID: 0}
+  offerCount: 5
+  pickCount: 2
+  wagons:
+  - {fileID: 11400000, guid: ae4d5ba43aaeb7343b2a4b1174581cb8, type: 2}
+  - {fileID: 11400000, guid: 79424a8348cba1048848569b6b04c017, type: 2}
+  - {fileID: 11400000, guid: 2e521d0f9afc76f428ce62ab6c5675d1, type: 2}
+  - {fileID: 11400000, guid: 551b10c777a51544f9f193520af11ef5, type: 2}
+  - {fileID: 11400000, guid: 8af389238a4afae429257e1fcdeb2ddb, type: 2}
+  - {fileID: 11400000, guid: 7c86fd86f046dd04891590b412c95ae2, type: 2}
+  - {fileID: 11400000, guid: 996db0e77393f054c9f71012c66b630f, type: 2}
+  - {fileID: 11400000, guid: 24425f0716b56154ba30aa2e83fcde34, type: 2}
+  conditions:
+  - condition: {fileID: 11400000, guid: 8869bb83a8d52334c9ef13c7d9d89e81, type: 2}
+    weight: 100
+  woodMultiplier: 1
+  scrapMultiplier: 1
+  eventsOnWayHere: []
+  eventsOnWayFromHere:
+  - travelEvent: {fileID: 11400000, guid: d651647a104b7ed46801f70b29d514b5, type: 2}
+    chance: 1
+  isFinal: 0
