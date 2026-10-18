@@ -46,5 +46,6 @@ public enum MachineAction
     Extract,
     Repair,
     Convert,
-    Fuel
+    Fuel,
+    None 
 }

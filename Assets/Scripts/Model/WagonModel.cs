@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WagonModel
+public class WagonModel : IMachineHost
 {
     public WagonConfig Config { get; }
     public int Hp { get; private set; }
+    public int MaxHp => Config.maxHp;
     public int Wood { get; private set; }   
     public int Scrap { get; private set; }  
     public bool IsDestroyed => Hp <= 0;

@@ -378,13 +378,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7c86fd86f046dd04891590b412c95ae2, type: 2}
   - {fileID: 11400000, guid: 996db0e77393f054c9f71012c66b630f, type: 2}
   - {fileID: 11400000, guid: 24425f0716b56154ba30aa2e83fcde34, type: 2}
-  - {fileID: 11400000, guid: b1b1c4cda850e9849ab5a7a41114749a, type: 2}
   machines:
   - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}
   - {fileID: 11400000, guid: afe92667d469f8e4db1f6801ebca5c2e, type: 2}
   - {fileID: 11400000, guid: cc61c393a249e524cbe7d6033f15107d, type: 2}
   - {fileID: 11400000, guid: 81e68f8d5bb078c47ac74ef38ee6a279, type: 2}
   wagonPrefab: {fileID: 6784692044714187594, guid: 84bb654966ff9724daf605b99be3839b, type: 3}
+  locomotiveConfig: {fileID: 11400000, guid: e59c71fd0ff0573478933e35e25f4619, type: 2}
+  locomotivePrefab: {fileID: 1811559864385686203, guid: d960823fbebcb4647937b740eaeab78d, type: 3}
 --- !u!4 &979237767
 Transform:
   m_ObjectHideFlags: 0
