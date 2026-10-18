@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8686d8df61ee46c4482eaf9255a8214a, type: 3}
+  m_Name: Boiler
+  m_EditorClassIdentifier: Assembly-CSharp::MachineConfig
+  displayName: "\u041A\u043E\u043F\u0442\u0438\u043B\u044C\u043D\u044F"
+  sprite: {fileID: 21300000, guid: d948212707faedc469c410b3f5cc3e49, type: 3}
+  size: {x: 2, y: 1}
+  craftWood: 5
+  craftScrap: 5
+  action: 3
+  workInterval: 5
+  resource: 0
+  amount: 1
+  wagonDamage: 2
+  outputResource: 2
+  outputAmount: 1
