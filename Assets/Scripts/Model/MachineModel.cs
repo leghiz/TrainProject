@@ -1,12 +1,23 @@
 using System;
 using UnityEngine;
 
+public interface IMachineHost
+{
+    int Hp { get; }
+    int MaxHp { get; }
+    void Repair(int amount);
+}
+
 public class MachineModel
 {
     public MachineConfig Config { get; }
     public Vector2Int Cell { get; } 
 
-    public float Progress => timer / Config.workInterval; 
+    public float Progress => timer / Interval;
+    
+    public float? IntervalOverride { get; set; }
+    public int Capacity { get; set; }
+    private float Interval => IntervalOverride ?? Config.workInterval;
     public bool IsWorking { get; private set; } = true;   
 
     public event Action<bool> WorkingChanged;
@@ -30,13 +41,13 @@ public class MachineModel
         ChargeLeft = config.charge;
     }
     
-    public void Tick(float deltaTime, WagonModel wagon, ResourceStorageModel storage)
+    public void Tick(float deltaTime, IMachineHost host, ResourceStorageModel storage)
     {
         timer += deltaTime;
-        if (timer < Config.workInterval) return;
-        timer -= Config.workInterval;
+        if (timer < Interval) return;
+        timer -= Interval;
 
-        bool worked = Work(wagon, storage);
+        bool worked = Work(host, storage);
         SetWorking(worked);
         if (worked) Worked?.Invoke();
     }
@@ -45,29 +56,31 @@ public class MachineModel
     {
         if (!NeedsLoading || amount <= 0) return 0;
 
-        int take = Mathf.Min(amount, storage.Get(Config.resource));
+        int room = Capacity > 0 ? Capacity - Loaded : int.MaxValue;
+        int take = Mathf.Min(amount, Mathf.Min(storage.Get(Config.resource), room));
         if (take <= 0 || !storage.TrySpend(Config.resource, take)) return 0;
 
         Loaded += take;
         LoadedChanged?.Invoke(Loaded);
         return take;
     }
-    private bool Work(WagonModel wagon, ResourceStorageModel storage)
+    private bool Work(IMachineHost host, ResourceStorageModel storage)
     {
         switch (Config.action)
         {
             case MachineAction.Extract:
+                if (!(host is WagonModel wagon)) return false;
                 int extracted = wagon.Extract(Config.resource, Config.amount, Config.wagonDamage);
                 if (extracted <= 0) return false;
                 storage.Add(Config.resource, extracted);
                 return true;
 
             case MachineAction.Repair:
-                int missing = wagon.Config.maxHp - wagon.Hp;
+                int missing = host.MaxHp - host.Hp;
                 if (missing <= 0 || IsUsedUp) return false;
                 int give = Mathf.Min(Config.amount, missing);
                 if (HasCharge) give = Mathf.Min(give, ChargeLeft);
-                wagon.Repair(give);
+                host.Repair(give);
                 if (HasCharge)
                 {
                     ChargeLeft -= give;
@@ -82,6 +95,9 @@ public class MachineModel
 
             case MachineAction.Fuel:
                 return UseLoaded(Config.amount);
+
+            case MachineAction.None:
+                return true;
 
             default:
                 return false;

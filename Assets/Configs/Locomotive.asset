@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de76fe45adf96b14aaad3e92ce3c7b25, type: 3}
+  m_Name: Locomotive
+  m_EditorClassIdentifier: Assembly-CSharp::LocomotiveConfig
+  displayName: "\u041B\u043E\u043A\u043E\u043C\u043E\u0442\u0438\u0432"
+  sprite: {fileID: 21300000, guid: b04b8d6487a4f384b81be3e583376a59, type: 3}
+  maxHp: 200
+  boiler: {fileID: 11400000, guid: 7303b1236bbef914cb1ee0049cd762fe, type: 2}
+  workbench: {fileID: 11400000, guid: 3f24521e091b15846b45c70116d8d512, type: 2}
+  boilerLevels:
+  - tank: 30
+    speed: 1
+    wearPerSecond: 1
+    traction: 6
+    fuelInterval: 5
+  - tank: 60
+    speed: 1.3
+    wearPerSecond: 1.5
+    traction: 12
+    fuelInterval: 4
+  - tank: 100
+    speed: 1.6
+    wearPerSecond: 2
+    traction: 20
+    fuelInterval: 3
+  noFuelSpeed: 0.3
