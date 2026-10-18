@@ -33,6 +33,9 @@ public class LocomotiveView : MonoBehaviour
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
 
+    public float Width => body.bounds.size.x;
+    public float Height => body.bounds.size.y;
+
     public void SetHp(float normalized) => hpFill.localScale = new Vector3(normalized, 1f, 1f);
 
     public void ShowDestroyed() => gameObject.SetActive(false);

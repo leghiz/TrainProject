@@ -11,6 +11,9 @@ public class LocomotiveConfig : ScriptableObject
     [Header("Параметры")]
     [Min(1)] public int maxHp = 200;
 
+    [Tooltip("Длина локомотива в клетках (нужна буре, чтобы понять, накрыла ли она его)")]
+    [Min(1)] public int length = 5;
+
     [Header("Станки, которые стоят в локомотиве с начала игры")]
     [Expandable] public MachineConfig boiler;
     [Expandable] public MachineConfig workbench;
