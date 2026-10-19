@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WeatherFog
+  m_Shader: {fileID: 4800000, guid: 1848663cd8d4bfc45a7e7c21844035ae, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Block: 4
+    - _Density: 0.72
+    - _DriftSpeed: 6
+    - _Intensity: 1
+    - _NoiseScale: 48
+    - _PixelsPerUnit: 1
+    - _PreviewTime: -1
+    - _Smooth: 1
+    - _Steps: 4
+    - _Variation: 0.7
+    - _WindowFog: 0.15
+    - _WindowNoise: 0.8
+    - _WindowSoftness: 0.6
+    m_Colors:
+    - _FogColor: {r: 0.78, g: 0.8399999, b: 0.88, a: 1}
+    - _WindowOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _WindowSize: {r: 60, g: 45, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
