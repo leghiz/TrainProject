@@ -8,6 +8,22 @@ public struct TooltipContent
     public int Hp;
     public int MaxHp;
 
+    public bool IsWagon;
+    public string Condition;
+    public string ConditionInfo;
+    public int Wood;
+    public int Scrap;
+
+    public bool IsMachine;
+    public bool Beside;
+    public Vector2 Size;
+    public bool HasResource;
+    public bool Heals;
+    public ResourceType Resource;
+    public float Progress;
+    public string TraitName;
+    public string TraitInfo;
+
     public bool HasHp => MaxHp > 0;
 }
 

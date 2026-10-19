@@ -12,6 +12,7 @@ public class WagonPresenter : IDisposable
     private readonly CargoSelectionModel cargoSelection;
     private readonly DismantleModel dismantle;
     private object dismantleTarget;
+    private (MachineModel machine, Vector2Int cell) movingFrom;
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
@@ -28,6 +29,7 @@ public class WagonPresenter : IDisposable
         this.dismantle = dismantle;
 
         view.SetSprite(model.Config.sprite);
+        if (model.Condition != null) view.SetMaterial(model.Condition.material);
         view.SetGridSize(model.Config.size);
         UpdateHp(model.Hp);
         foreach (var machine in model.Machines) ShowMachine(machine);
@@ -46,9 +48,38 @@ public class WagonPresenter : IDisposable
         view.HoverExited += ClearHover;
         view.CellReleased += OnCellReleased;
         view.CellRightPressed += OnCellRightPressed;
+        view.CellPressed += OnCellPressed;
         view.CellHovered += CancelDismantleIfMovedAway;
         view.HoverExited += CancelDismantle;
         build.SelectedChanged += OnSelectedChanged;
+        build.Cancelled += OnCancelled;
+        RefreshGrid(build.Selected);
+    }
+
+    // Удержание ЛКМ над станком с пустой рукой — взять его в руку и переставить.
+    private void OnCellPressed(Vector2Int cell)
+    {
+        if (build.Selected != null) return;
+        var machine = model.GetMachineAt(cell);
+        if (machine == null) return;
+        dismantleTarget = machine;
+        dismantle.Begin(this, () => PickUp(machine));
+    }
+
+    private void PickUp(MachineModel machine)
+    {
+        if (!model.TakeMachine(machine)) return;
+        ClearHover();
+        movingFrom = (machine, machine.Cell);
+        build.SelectMoving(machine);
+    }
+
+    // Отпустили станок мимо или нажали ПКМ — он возвращается на своё место.
+    private void OnCancelled(MachineConfig machine, MachineTrait trait)
+    {
+        if (movingFrom.machine == null || build.Moving != movingFrom.machine) return;
+        model.TryPlaceExisting(movingFrom.machine, movingFrom.cell);
+        movingFrom = default;
     }
 
     // Удержание ПКМ над станком или ящиком с пустой рукой — разборка (ПКМ с предметом в руке — это отмена).
@@ -94,7 +125,11 @@ public class WagonPresenter : IDisposable
         Vector3 anchor = view.TooltipPoint;
         var machine = model.GetMachineAt(cell);
         var box = model.GetBoxAt(cell);
-        if (machine != null) hover.Show(this, () => TooltipTexts.Machine(machine), anchor);
+        if (machine != null)
+        {
+            Vector3 machinePoint = machines.TryGetValue(machine, out var entry) ? entry.view.transform.position : anchor;
+            hover.Show(this, () => TooltipTexts.Machine(machine), machinePoint);
+        }
         else if (box != null) hover.Show(this, () => TooltipTexts.Box(box), anchor);
         else hover.Show(this, () => TooltipTexts.Wagon(model), anchor);
     }
@@ -152,6 +187,11 @@ public class WagonPresenter : IDisposable
             LoadMachineAt(cell);
             return;
         }
+        if (build.Moving != null)
+        {
+            if (model.TryPlaceExisting(build.Moving, cell)) build.Select(null);
+            return;
+        }
         if (model.TryPlace(machine, cell, build.SelectedTrait)) build.Select(null);
     }
 
@@ -163,7 +203,28 @@ public class WagonPresenter : IDisposable
 
     private void OnSelectedChanged(MachineConfig machine)
     {
+        if (build.Moving == null) movingFrom = default;
+        RefreshGrid(machine);
         if (view.HoveredCell.HasValue) UpdatePreview(view.HoveredCell.Value);
+    }
+
+    // Пока станок в руке — на вагоне видна сетка свободных клеток.
+    private void RefreshGrid(MachineConfig machine)
+    {
+        if (machine == null || machine.action == MachineAction.Plating)
+        {
+            view.HideGrid();
+            return;
+        }
+
+        var free = new List<Vector2Int>();
+        for (int x = 0; x < model.Config.size.x; x++)
+            for (int y = 0; y < model.Config.size.y; y++)
+            {
+                var cell = new Vector2Int(x, y);
+                if (model.GetMachineAt(cell) == null && model.GetBoxAt(cell) == null) free.Add(cell);
+            }
+        view.ShowGrid(free);
     }
 
     public void Dispose()
@@ -181,6 +242,8 @@ public class WagonPresenter : IDisposable
         view.HoverExited -= ClearHover;
         view.CellReleased -= OnCellReleased;
         view.CellRightPressed -= OnCellRightPressed;
+        view.CellPressed -= OnCellPressed;
+        build.Cancelled -= OnCancelled;
         view.CellHovered -= CancelDismantleIfMovedAway;
         view.HoverExited -= CancelDismantle;
         build.SelectedChanged -= OnSelectedChanged;

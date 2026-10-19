@@ -11,7 +11,9 @@ public interface IMachineHost
 public class MachineModel
 {
     public MachineConfig Config { get; }
-    public Vector2Int Cell { get; } 
+    public Vector2Int Cell { get; private set; }
+
+    public void MoveTo(Vector2Int cell) => Cell = cell;
 
     public float Progress => timer / Interval;
     

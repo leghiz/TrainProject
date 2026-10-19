@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bdc452758f6aae4fbe428f8cf6d5799, type: 3}
   m_Name: Rusty
   m_EditorClassIdentifier: Assembly-CSharp::WagonCondition
-  displayName: "\u0420\u0436\u0430\u0432\u044B\u0439"
+  displayName: Rusty
   resourceMultiplier: 0.5
   weightMultiplier: 0.5
+  material: {fileID: 2100000, guid: d306893685a70064abd5b7d645aeb779, type: 2}

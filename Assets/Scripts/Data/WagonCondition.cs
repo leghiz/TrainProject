@@ -10,4 +10,7 @@ public class WagonCondition : ScriptableObject
 
     [Tooltip("Множитель веса для скорости поезда (Ржавый 0.5, Призрачный 0)")]
     [Min(0f)] public float weightMultiplier = 1f;
+
+    [Tooltip("Материал с шейдером состояния (ржавчина, блик, призрак). Пусто — обычный спрайт")]
+    public Material material;
 }

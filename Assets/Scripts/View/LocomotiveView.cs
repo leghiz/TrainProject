@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public enum LocomotiveSlot { Boiler, Workbench, Welder }
 
-public enum LocomotivePart { None, Body, Boiler, Workbench, Welder }
+public enum LocomotivePart { None, Body, Boiler, Workbench, Welder, Ready }
 
 public class LocomotiveView : MonoBehaviour
 {
@@ -92,7 +92,7 @@ public class LocomotiveView : MonoBehaviour
     public void SetFogged(bool value)
     {
         fogged = value;
-        foreach (var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = !value;
+        foreach (var outline in GetComponentsInChildren<HoverOutline>(true)) outline.enabled = !value;
         if (boilerUpgrade != null) boilerUpgrade.SetBlocked(value);
     }
 
@@ -103,6 +103,8 @@ public class LocomotiveView : MonoBehaviour
     }
 
     public Vector3 TooltipPoint => tooltipPoint != null ? tooltipPoint.position : transform.position + Vector3.up * Height / 2f;
+
+    public Vector3 ReadyIconCenter => readyIcon.bounds.center;
 
     public void ShowDestroyed() => onDestroyed?.Invoke();
 
@@ -118,7 +120,7 @@ public class LocomotiveView : MonoBehaviour
     public MachineView AddMachine(LocomotiveSlot slot)
     {
         var machine = Instantiate(machinePrefab, SlotAnchor(slot).position, Quaternion.identity, transform);
-        if (fogged) foreach (var r in machine.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        if (fogged) foreach (var outline in machine.GetComponentsInChildren<HoverOutline>(true)) outline.enabled = false;
         return machine;
     }
 
@@ -137,7 +139,7 @@ public class LocomotiveView : MonoBehaviour
     public MachineView AddPlate(int slot)
     {
         var plate = Instantiate(machinePrefab, plateSlots[slot].position, Quaternion.identity, transform);
-        if (fogged) foreach (var r in plate.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        if (fogged) foreach (var outline in plate.GetComponentsInChildren<HoverOutline>(true)) outline.enabled = false;
         return plate;
     }
 
@@ -208,6 +210,7 @@ public class LocomotiveView : MonoBehaviour
     private LocomotivePart PartAt(Vector2 world, bool overWelder)
     {
         if (!gameObject.activeInHierarchy) return LocomotivePart.None;
+        if (IsOverReadyIcon(world)) return LocomotivePart.Ready;
         if (overWelder) return LocomotivePart.Welder;
         if (IsOver(world, workbenchSlot, workbenchCells)) return LocomotivePart.Workbench;
         if (IsOver(world, boilerSlot, boilerCells)) return LocomotivePart.Boiler;

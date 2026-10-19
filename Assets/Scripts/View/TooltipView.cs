@@ -22,8 +22,33 @@ public class TooltipView : MonoBehaviour
     [Tooltip("Выключено — тултип стоит там, где его поставили в сцене. Включено — появляется над объектом под мышкой")]
     [SerializeField] private bool followTarget = true;
 
+    [Header("Вагон (можно не заполнять)")]
+    [Tooltip("Отдельный тултип для вагона: если задан, вагон показывается в нём вместо общего")]
+    [SerializeField] private WagonTooltipView wagonTooltip;
+
+    [Header("Станок (можно не заполнять)")]
+    [Tooltip("Отдельный тултип для станка: если задан, станок показывается в нём вместо общего")]
+    [SerializeField] private MachineTooltipView machineTooltip;
+
     public void Show(TooltipContent content, Vector3 anchor)
     {
+        if (content.IsWagon && wagonTooltip != null)
+        {
+            root.SetActive(false);
+            if (machineTooltip != null) machineTooltip.Hide();
+            wagonTooltip.Show(content, anchor);
+            return;
+        }
+        if (content.IsMachine && machineTooltip != null)
+        {
+            root.SetActive(false);
+            if (wagonTooltip != null) wagonTooltip.Hide();
+            machineTooltip.Show(content, anchor);
+            return;
+        }
+        if (wagonTooltip != null) wagonTooltip.Hide();
+        if (machineTooltip != null) machineTooltip.Hide();
+
         root.SetActive(true);
         if (title != null) title.text = content.Title;
         if (info != null) info.text = content.Info;
@@ -39,7 +64,12 @@ public class TooltipView : MonoBehaviour
         KeepOnScreen();
     }
 
-    public void Hide() => root.SetActive(false);
+    public void Hide()
+    {
+        root.SetActive(false);
+        if (wagonTooltip != null) wagonTooltip.Hide();
+        if (machineTooltip != null) machineTooltip.Hide();
+    }
     
     private void KeepOnScreen()
     {

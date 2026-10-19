@@ -9,5 +9,10 @@ public class MachineView : MonoBehaviour
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
 
+    public void SetMaterial(Material material)
+    {
+        if (material != null) body.sharedMaterial = material;
+    }
+
     public void SetWorking(bool working) => body.color = working ? Color.white : idleColor;
 }
