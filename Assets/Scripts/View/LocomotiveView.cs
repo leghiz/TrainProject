@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public enum LocomotiveSlot { Boiler, Workbench, Welder }
@@ -45,6 +46,16 @@ public class LocomotiveView : MonoBehaviour
     [Tooltip("Иконка над локомотивом: её хватают мышкой и тащат на вагон")]
     [SerializeField] private SpriteRenderer readyIcon;
 
+    [Header("Прогресс крафта")]
+    [Tooltip("Полоска целиком: видна, пока верстак что-то делает")]
+    [SerializeField] private GameObject craftProgressBar;
+    [Tooltip("Точка у левого края полоски: её масштаб по X = доля готовности")]
+    [SerializeField] private Transform craftProgressFill;
+
+    [Header("Разрушение")]
+    [Tooltip("Что происходит, когда локомотив разрушен: анимация, другой спрайт, дым — настраивается здесь без кода")]
+    [SerializeField] private UnityEvent onDestroyed;
+
     [Header("Подсветка установки")]
     [SerializeField] private SpriteRenderer placementPreview;
     [SerializeField] private Color canPlaceColor = new Color(0.3f, 1f, 0.3f, 0.45f);
@@ -87,7 +98,14 @@ public class LocomotiveView : MonoBehaviour
 
     public Vector3 TooltipPoint => tooltipPoint != null ? tooltipPoint.position : transform.position + Vector3.up * Height / 2f;
 
-    public void ShowDestroyed() => gameObject.SetActive(false);
+    public void ShowDestroyed() => onDestroyed?.Invoke();
+
+    public void SetCraftProgress(float? progress)
+    {
+        if (craftProgressBar != null) craftProgressBar.SetActive(progress.HasValue);
+        if (progress.HasValue && craftProgressFill != null)
+            craftProgressFill.localScale = new Vector3(Mathf.Clamp01(progress.Value), 1f, 1f);
+    }
     
     public MachineView AddMachine(LocomotiveSlot slot)
     {

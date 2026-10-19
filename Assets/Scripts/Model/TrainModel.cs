@@ -25,10 +25,17 @@ public class TrainModel
         if (wagon == null || wagon.IsDestroyed || wagons.Contains(wagon)) return;
 
         wagons.Add(wagon);
-        Action handler = () => Detach(wagon);
+        Action handler = () => DetachFrom(wagon);
         destroyedHandlers[wagon] = handler;
         wagon.Destroyed += handler;
         WagonAttached?.Invoke(wagon);
+    }
+
+    public void DetachFrom(WagonModel wagon)
+    {
+        int index = wagons.IndexOf(wagon);
+        if (index < 0) return;
+        for (int i = wagons.Count - 1; i >= index; i--) Detach(wagons[i]);
     }
 
     public void Detach(WagonModel wagon)

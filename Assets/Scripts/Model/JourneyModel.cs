@@ -47,6 +47,7 @@ public class JourneyModel
         storage.Add(ResourceType.Wood, config.startWood);
         storage.Add(ResourceType.Scrap, config.startScrap);
         train.Locomotive.Destroyed += OnLocomotiveDestroyed;
+        train.WagonDetached += Delivery.OnWagonDetached;
     }
     
     public bool Travel(MapNode target)

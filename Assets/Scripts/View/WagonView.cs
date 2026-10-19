@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 
@@ -25,6 +26,14 @@ public class WagonView : MonoBehaviour
 
     [Tooltip("Высота рамы с колёсами внизу спрайта в пикселях: сетка начинается выше неё")]
     [SerializeField] private int chassisHeight = 7;
+
+    [Header("Отцепился — откатывается влево")]
+    [Tooltip("Скорость в первый момент, в пикселях игры в секунду")]
+    [SerializeField] private float rollStartSpeed = 10f;
+    [Tooltip("Насколько быстро отстаёт: поезд уходит вперёд, вагон всё быстрее уезжает влево")]
+    [SerializeField] private float rollAcceleration = 40f;
+    [Tooltip("Что ещё происходит, когда вагон отцепился: звук, частицы, обломки — без кода")]
+    [SerializeField] private UnityEvent onDetached;
 
     [Header("Подсветка установки")]
     [SerializeField] private SpriteRenderer placementPreview;
@@ -63,7 +72,18 @@ public class WagonView : MonoBehaviour
 
     public void SetHp(float normalized) => hpFill.localScale = new Vector3(normalized, 1f, 1f);
 
-    public void ShowDestroyed() => gameObject.SetActive(false);
+    private bool rolling;
+    private float rollSpeed;
+
+    public void RollAway()
+    {
+        rolling = true;
+        rollSpeed = rollStartSpeed;
+        HoveredCell = null;
+        if (hpBar != null) hpBar.SetActive(false);
+        HidePlacementPreview();
+        onDetached?.Invoke();
+    }
 
     public MachineView AddMachine(Vector2Int cell, Vector2Int size)
     {
@@ -98,6 +118,12 @@ public class WagonView : MonoBehaviour
 
     private void Update()
     {
+        if (rolling)
+        {
+            Roll();
+            return;
+        }
+
         var mouse = Mouse.current;
         var cam = Camera.main;
         if (mouse == null || cam == null) return;
@@ -117,6 +143,17 @@ public class WagonView : MonoBehaviour
         if (cell.HasValue && mouse.leftButton.wasReleasedThisFrame && !PointerOverUI.Check()) CellReleased?.Invoke(cell.Value);
     }
     
+    private void Roll()
+    {
+        rollSpeed += rollAcceleration * Time.deltaTime;
+        transform.position += Vector3.left * rollSpeed * Time.deltaTime;
+
+        var cam = Camera.main;
+        if (cam == null) return;
+        float screenLeft = cam.transform.position.x - cam.orthographicSize * cam.aspect;
+        if (transform.position.x + Width / 2f < screenLeft) Destroy(gameObject);
+    }
+
     public Vector2 CellToLocal(Vector2Int cell) => GridOrigin + (Vector2)cell * CellUnits;
     
     private Vector2Int? LocalToCell(Vector2 local)

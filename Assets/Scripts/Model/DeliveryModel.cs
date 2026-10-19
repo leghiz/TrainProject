@@ -60,6 +60,12 @@ public class DeliveryModel
 
     private void OnWagonDestroyed() => Fail("вагон с ящиком отвалился");
 
+    // Вагон с ящиком цел, но отцепился вместе со сломанным вагоном перед ним.
+    public void OnWagonDetached(WagonModel wagon)
+    {
+        if (IsActive && wagon == Wagon) Fail("вагон с ящиком отцепился");
+    }
+
     private void Fail(string reason)
     {
         Clear();
