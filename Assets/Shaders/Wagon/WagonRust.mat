@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WagonRust
+  m_Shader: {fileID: 4800000, guid: e1c8f4fdb5ed8454b8426ca19883368a, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BlobSize: 6
+    - _BottomRust: 0.35
+    - _Dither: 0.6
+    - _EdgeRust: 0.55
+    - _EdgeWidth: 2
+    - _EnableExternalAlpha: 0
+    - _KeepOutline: 0.12
+    - _PitChance: 0.06
+    - _RustAmount: 0.55
+    - _RustSeed: 0
+    - _SeamRust: 0.35
+    - _StainBand: 0.25
+    - _StainMix: 0.55
+    - _StreakRust: 0.3
+    - _ToneJitter: 0.15
+    - _ToneMax: 0.45
+    - _ToneMin: 0.06
+    - _ZWrite: 0
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RustDark: {r: 0.24999997, g: 0.11999995, b: 0.06999998, a: 1}
+    - _RustHighlight: {r: 0.86, g: 0.54999995, b: 0.26999995, a: 1}
+    - _RustLight: {r: 0.7, g: 0.35999998, b: 0.14999998, a: 1}
+    - _RustMid: {r: 0.4699999, g: 0.21999997, b: 0.09999997, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
