@@ -1,7 +1,8 @@
 using System;
 
 // Удержали ПКМ над ящиком посылки до конца → посылка провалена,
-// а станок со случайным свойством появляется над локомотивом, как скрафченный.
+// а из ящика выпадает станок со случайным свойством и встаёт на его место в вагоне.
+// Если не влез — появляется над локомотивом, как скрафченный.
 public class DisassemblePresenter : IDisposable
 {
     private readonly CargoSelectionModel selection;
@@ -22,9 +23,13 @@ public class DisassemblePresenter : IDisposable
         var box = selection.Box;
         if (box == null) return;
         selection.Clear();
-        // Над локомотивом уже висит готовый станок — новый положить некуда, сначала забери тот.
-        if (box != journey.Delivery.Box || workbench.HasReady) return;
-        if (journey.DisassembleCargo(out var machine, out var trait)) workbench.TryGive(machine, trait);
+        if (box != journey.Delivery.Box) return;
+
+        var wagon = journey.Delivery.Wagon;
+        var cell = box.Cell;
+        if (!journey.DisassembleCargo(out var machine, out var trait)) return;
+        if (wagon != null && wagon.TryPlace(machine, cell, trait)) return;
+        workbench.TryGive(machine, trait);
     }
 
     public void Dispose() => selection.Changed -= OnSelected;
