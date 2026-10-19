@@ -44,4 +44,24 @@ half4 ST_SampleTexel(float2 texel, float2 size)
     return SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, (texel + 0.5) / size, 0);
 }
 
+bool ST_IsRim(float2 texel, float2 size)
+{
+    return ST_SampleTexel(texel + float2(1.0, 0.0), size).a < 0.5
+        || ST_SampleTexel(texel - float2(1.0, 0.0), size).a < 0.5
+        || ST_SampleTexel(texel + float2(0.0, 1.0), size).a < 0.5
+        || ST_SampleTexel(texel - float2(0.0, 1.0), size).a < 0.5;
+}
+
+bool ST_IsTopEdge(float2 texel, float2 size)
+{
+    return ST_SampleTexel(texel + float2(0.0, 1.0), size).a < 0.5;
+}
+
+float2 ST_SpriteOriginWS(float3 positionOS, float2 uv, float pixelsPerUnit)
+{
+    uint width, height;
+    _MainTex.GetDimensions(width, height);
+    return TransformObjectToWorld(positionOS).xy - uv * float2(width, height) / max(pixelsPerUnit, 0.0001);
+}
+
 #endif 

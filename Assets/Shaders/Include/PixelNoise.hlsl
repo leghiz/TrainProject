@@ -66,4 +66,9 @@ half PN_Luma(half3 color)
     return dot(color, half3(0.299h, 0.587h, 0.114h));
 }
 
+half3 PN_Gradient3(float t, half3 low, half3 mid, half3 high)
+{
+    return t < 0.5 ? lerp(low, mid, t * 2.0) : lerp(mid, high, (t - 0.5) * 2.0);
+}
+
 #endif 
