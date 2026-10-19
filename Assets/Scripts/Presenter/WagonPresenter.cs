@@ -7,15 +7,17 @@ public class WagonPresenter : IDisposable
     private readonly WagonModel model;
     private readonly WagonView view;
     private readonly BuildModel build;
+    private readonly ResourceStorageModel storage;
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
 
-    public WagonPresenter(WagonModel model, WagonView view, BuildModel build)
+    public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage)
     {
         this.model = model;
         this.view = view;
         this.build = build;
+        this.storage = storage;
 
         view.SetSprite(model.Config.sprite);
         view.SetGridSize(model.Config.size);
@@ -32,7 +34,7 @@ public class WagonPresenter : IDisposable
 
         view.CellHovered += UpdatePreview;
         view.HoverExited += view.HidePlacementPreview;
-        view.CellClicked += OnCellClicked;
+        view.CellReleased += OnCellReleased;
         build.SelectedChanged += OnSelectedChanged;
     }
 
@@ -76,11 +78,21 @@ public class WagonPresenter : IDisposable
         view.ShowPlacementPreview(cell, machine.size, model.CanPlace(machine, cell));
     }
 
-    private void OnCellClicked(Vector2Int cell)
+    private void OnCellReleased(Vector2Int cell)
     {
         var machine = build.Selected;
-        if (machine == null) return;
-        if (model.TryPlace(machine, cell, build.SelectedTrait)) UpdatePreview(cell);
+        if (machine == null)
+        {
+            LoadMachineAt(cell);
+            return;
+        }
+        if (model.TryPlace(machine, cell, build.SelectedTrait)) build.Select(null);
+    }
+
+    private void LoadMachineAt(Vector2Int cell)
+    {
+        var placed = model.GetMachineAt(cell);
+        if (placed != null && placed.NeedsLoading) placed.Load(storage, int.MaxValue);
     }
 
     private void OnSelectedChanged(MachineConfig machine)
@@ -99,7 +111,7 @@ public class WagonPresenter : IDisposable
 
         view.CellHovered -= UpdatePreview;
         view.HoverExited -= view.HidePlacementPreview;
-        view.CellClicked -= OnCellClicked;
+        view.CellReleased -= OnCellReleased;
         build.SelectedChanged -= OnSelectedChanged;
 
         foreach (var entry in machines.Values) entry.presenter.Dispose();

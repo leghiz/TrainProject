@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8686d8df61ee46c4482eaf9255a8214a, type: 3}
+  m_Name: Plate
+  m_EditorClassIdentifier: Assembly-CSharp::MachineConfig
+  displayName: "\u041B\u0438\u0441\u0442 \u043E\u0431\u0448\u0438\u0432\u043A\u0438"
+  sprite: {fileID: 21300000, guid: 423dea202f52ac2479a9c1c12c35dc3a, type: 3}
+  size: {x: 1, y: 1}
+  craftWood: 0
+  craftScrap: 0
+  craftIngots: 5
+  action: 5
+  workInterval: 3
+  resource: 0
+  amount: 1
+  wagonDamage: 2
+  outputResource: 2
+  outputAmount: 1
+  charge: 0
+  capacity: 0
+  maxHp: 10

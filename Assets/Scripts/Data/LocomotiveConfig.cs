@@ -18,6 +18,14 @@ public class LocomotiveConfig : ScriptableObject
     [Expandable] public MachineConfig boiler;
     [Expandable] public MachineConfig workbench;
 
+    [Header("Обшивка")]
+    [Tooltip("Сколько листов обшивки можно повесить на локомотив")]
+    [Min(0)] public int maxPlates = 3;
+
+    [Header("Верстак")]
+    [Tooltip("Какие станки можно скрафтить")]
+    [Expandable] public MachineConfig[] recipes;
+
     [Header("Уровни коптильни (1-й элемент — уровень 1)")]
     public BoilerLevelSettings[] boilerLevels;
 

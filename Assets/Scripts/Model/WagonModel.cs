@@ -172,7 +172,8 @@ public class WagonModel : IMachineHost
         MachineRemoved?.Invoke(machine);
     }
 
-    public bool CanPlace(MachineConfig machine, Vector2Int cell) => IsAreaFree(cell, machine.size);
+    public bool CanPlace(MachineConfig machine, Vector2Int cell) =>
+        machine.action != MachineAction.Plating && IsAreaFree(cell, machine.size);
 
     private bool IsAreaFree(Vector2Int cell, Vector2Int size)
     {

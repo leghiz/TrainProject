@@ -14,6 +14,7 @@ public class LocomotiveModel : IMachineHost
     public MachineModel Boiler { get; }
     public MachineModel Workbench { get; }
     public MachineModel Welder { get; private set; }
+    public PlatingModel Plating { get; }
 
     public event Action<MachineModel> MachinePlaced;
     public event Action<MachineModel> MachineRemoved;
@@ -32,6 +33,7 @@ public class LocomotiveModel : IMachineHost
     {
         Config = config;
         Hp = config.maxHp;
+        Plating = new PlatingModel(config.maxPlates);
         if (config.boiler != null) Boiler = new MachineModel(config.boiler, Vector2Int.zero);
         if (config.workbench != null) Workbench = new MachineModel(config.workbench, Vector2Int.zero);
         ApplyBoilerLevel();
@@ -68,6 +70,9 @@ public class LocomotiveModel : IMachineHost
     {
         if (IsDestroyed || amount <= 0) return;
 
+        amount = Plating.Damage(amount);
+        if (amount <= 0) return;
+
         Hp = Mathf.Max(0, Hp - amount);
         HpChanged?.Invoke(Hp);
 
@@ -93,6 +98,10 @@ public class LocomotiveModel : IMachineHost
         MachinePlaced?.Invoke(Welder);
         return true;
     }
+
+    public bool CanPlacePlate(MachineConfig plate, int slot) => !IsDestroyed && Plating.CanAdd(plate, slot);
+
+    public bool TryPlacePlate(MachineConfig plate, int slot) => !IsDestroyed && Plating.TryAdd(plate, slot);
 
     public void Tick(float deltaTime, ResourceStorageModel storage)
     {

@@ -8,9 +8,12 @@ public class WagonSandbox : MonoBehaviour
     [SerializeField, Expandable] private LocomotiveConfig locomotiveConfig;
     [SerializeField] private TrainView trainView;
     [SerializeField, Expandable] private StormConfig stormConfig;
-    [SerializeField] private StormView stormPrefab;
+    [Tooltip("Буря из сцены (дочерний объект Train): высоту и вид задаёт геймдиз, по X её двигает код")]
+    [SerializeField] private StormView stormView;
     [SerializeField, Expandable] private JourneyConfig journeyConfig;
     [SerializeField, Expandable] private MachineTrait[] traits;
+    [SerializeField] private WorkbenchPanelView workbenchPanel;
+    [SerializeField] private HandView handView;
 
     private readonly BuildModel build = new BuildModel();
     private readonly ResourceStorageModel storage = new ResourceStorageModel();
@@ -22,6 +25,9 @@ public class WagonSandbox : MonoBehaviour
     private StormPresenter stormPresenter;
     private JourneyModel journey;
     private JourneyPresenter journeyPresenter;
+    private WorkbenchModel workbench;
+    private WorkbenchPresenter workbenchPresenter;
+    private HandPresenter handPresenter;
     private float logTimer;
     private int traitIndex = -1; 
 
@@ -37,17 +43,22 @@ public class WagonSandbox : MonoBehaviour
 
         locomotive = new LocomotiveModel(locomotiveConfig);
         locomotive.Destroyed += () => Debug.Log("[Локомотив] разрушен — конец игры");
+        locomotive.Plating.Changed += () => Debug.Log($"[Обшивка] листов {locomotive.Plating.Plates.Count}, хп {locomotive.Plating.TotalHp}/{locomotive.Plating.TotalMaxHp}");
 
         train = new TrainModel(locomotive);
         train.WagonAttached += w => Debug.Log($"[Поезд] прицеплен {w.Config.displayName}");
         train.WagonDetached += w => Debug.Log($"[Поезд] отцеплен {w.Config.displayName}");
 
-        trainPresenter = new TrainPresenter(train, trainView, build);
+        trainPresenter = new TrainPresenter(train, trainView, build, storage);
         AttachRandomWagon();
+
+        workbench = new WorkbenchModel(locomotiveConfig.recipes, storage);
+        workbench.ReadyChanged += m => Debug.Log(m != null ? $"[Верстак] готов {m.displayName} — тащи иконку на вагон" : "[Верстак] слот свободен");
+        workbenchPresenter = new WorkbenchPresenter(workbench, storage, build, trainView.Locomotive, workbenchPanel);
+        handPresenter = new HandPresenter(build, handView);
 
         storm = new StormModel(stormConfig, train);
         storm.NodeChanged += node => Debug.Log($"[Буря] узел {node}, скорость {storm.Speed:0.00}");
-        var stormView = Instantiate(stormPrefab, trainView.transform);
         stormPresenter = new StormPresenter(storm, stormView, trainView);
 
         journey = new JourneyModel(journeyConfig, train, storm, storage);
@@ -79,7 +90,6 @@ public class WagonSandbox : MonoBehaviour
         if (kb.dKey.wasPressedThisFrame) Tail?.Damage(10);
         if (kb.rKey.wasPressedThisFrame) Tail?.Repair(10);
         if (kb.kKey.wasPressedThisFrame) locomotive.Damage(10);
-        if (kb.lKey.wasPressedThisFrame) LoadMachines();
         if (kb.tKey.wasPressedThisFrame)
         {
             traitIndex = traitIndex + 1 >= traits.Length ? -1 : traitIndex + 1;
@@ -115,6 +125,8 @@ public class WagonSandbox : MonoBehaviour
 
     private void OnDestroy()
     {
+        handPresenter?.Dispose();
+        workbenchPresenter?.Dispose();
         journeyPresenter?.Dispose();
         stormPresenter?.Dispose();
         trainPresenter?.Dispose();
@@ -196,20 +208,6 @@ public class WagonSandbox : MonoBehaviour
                       $"отвезти до узла {journey.Node + journeyConfig.deliveryDistance}, награда {station.Cargo.Box.rewardIngots} слитков");
         sb.Append("   | Enter — к карте");
         Debug.Log(sb.ToString());
-    }
-
-    private void LoadMachines()
-    {
-        foreach (var wagon in train.Wagons)
-            foreach (var machine in wagon.Machines) LoadMachine(machine);
-        if (locomotive.Boiler != null) LoadMachine(locomotive.Boiler);
-    }
-
-    private void LoadMachine(MachineModel machine)
-    {
-        if (!machine.NeedsLoading) return;
-        int loaded = machine.Load(storage, 4);
-        Debug.Log($"[Загрузка] {machine.Config.displayName}: +{loaded} {machine.Config.resource}, в станке {machine.Loaded}");
     }
 
     private void LogTrain()
