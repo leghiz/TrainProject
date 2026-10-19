@@ -14,7 +14,8 @@ public class StormConfig : ScriptableObject
     [Min(0.01f)] public float cellsPerSecondAtSpeed1 = 1f;
 
     [Header("Погоня")]
-    [Tooltip("Расстояние от бури до хвоста поезда в начале игры, в клетках")]
+    [Tooltip("Запасной вариант: расстояние от бури до хвоста поезда в начале, в клетках. " +
+             "В игре буря стартует там, где её поставили в сцене (Train → Storm), это поле тогда не используется")]
     [Min(0f)] public float startDistance = 10f;
 
     [Tooltip("Урон в секунду каждому накрытому вагону и локомотиву")]

@@ -18,6 +18,10 @@ public class TooltipView : MonoBehaviour
     [SerializeField] private Transform hpFill;
     [SerializeField] private TextMesh hpText;
 
+    [Header("Положение")]
+    [Tooltip("Выключено — тултип стоит там, где его поставили в сцене. Включено — появляется над объектом под мышкой")]
+    [SerializeField] private bool followTarget = true;
+
     public void Show(TooltipContent content, Vector3 anchor)
     {
         root.SetActive(true);
@@ -30,6 +34,7 @@ public class TooltipView : MonoBehaviour
             if (hpText != null) hpText.text = $"{content.Hp}/{content.MaxHp}";
         }
 
+        if (!followTarget) return;
         transform.position = new Vector3(Mathf.Round(anchor.x), Mathf.Round(anchor.y), 0f);
         KeepOnScreen();
     }

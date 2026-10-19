@@ -899,7 +899,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &255177369
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1134,6 +1134,77 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 278079553}
   m_CullTransparentMesh: 1
+--- !u!1 &312635275
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 312635277}
+  - component: {fileID: 312635276}
+  m_Layer: 0
+  m_Name: Game
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &312635276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312635275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5abf8bea06ffd44ea3f017c0b08f55a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game
+  locomotiveConfig: {fileID: 11400000, guid: e59c71fd0ff0573478933e35e25f4619, type: 2}
+  journeyConfig: {fileID: 11400000, guid: 2b6c1bfa2a9470947908907afac5a5f8, type: 2}
+  stormConfig: {fileID: 11400000, guid: e941d362d7bb74c4289034fb1f554e7d, type: 2}
+  startWagonPool:
+  - {fileID: 11400000, guid: ae4d5ba43aaeb7343b2a4b1174581cb8, type: 2}
+  - {fileID: 11400000, guid: 79424a8348cba1048848569b6b04c017, type: 2}
+  - {fileID: 11400000, guid: 2e521d0f9afc76f428ce62ab6c5675d1, type: 2}
+  - {fileID: 11400000, guid: 551b10c777a51544f9f193520af11ef5, type: 2}
+  - {fileID: 11400000, guid: 8af389238a4afae429257e1fcdeb2ddb, type: 2}
+  - {fileID: 11400000, guid: 7c86fd86f046dd04891590b412c95ae2, type: 2}
+  - {fileID: 11400000, guid: 996db0e77393f054c9f71012c66b630f, type: 2}
+  - {fileID: 11400000, guid: 24425f0716b56154ba30aa2e83fcde34, type: 2}
+  trainView: {fileID: 540700458}
+  stormView: {fileID: 464290518}
+  handView: {fileID: 1505933448}
+  tooltipView: {fileID: 2078640636}
+  disassembleButton: {fileID: 105789135}
+  resourcePanel: {fileID: 1807006933}
+  workbenchPanel: {fileID: 1799684360}
+  mapScreen: {fileID: 255177370}
+  stationScreen: {fileID: 1450702922}
+  onGameOver:
+    m_PersistentCalls:
+      m_Calls: []
+  onActFinished:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &312635277
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312635275}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &342958845
 GameObject:
   m_ObjectHideFlags: 0
@@ -1251,7 +1322,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2659843829044576070, guid: ce5d978b22ce9a74a8c8f5a9e48c65d7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -294
       objectReference: {fileID: 0}
     - target: {fileID: 2659843829044576070, guid: ce5d978b22ce9a74a8c8f5a9e48c65d7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1563,6 +1634,9 @@ MonoBehaviour:
   wagonPrefab: {fileID: 6784692044714187594, guid: 84bb654966ff9724daf605b99be3839b, type: 3}
   gap: 6
   cellSize: 16
+  showPreview: 1
+  previewWagons:
+  - {fileID: 11400000, guid: 2e521d0f9afc76f428ce62ab6c5675d1, type: 2}
 --- !u!4 &540700459
 Transform:
   m_ObjectHideFlags: 0
@@ -3332,80 +3406,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 978089843}
   m_CullTransparentMesh: 1
---- !u!1 &979237765
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 979237767}
-  - component: {fileID: 979237766}
-  m_Layer: 0
-  m_Name: WagonSandbox
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &979237766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 979237765}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 422563e853987264eb970ef5b18f301f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WagonSandbox
-  wagons:
-  - {fileID: 11400000, guid: ae4d5ba43aaeb7343b2a4b1174581cb8, type: 2}
-  - {fileID: 11400000, guid: 79424a8348cba1048848569b6b04c017, type: 2}
-  - {fileID: 11400000, guid: 2e521d0f9afc76f428ce62ab6c5675d1, type: 2}
-  - {fileID: 11400000, guid: 551b10c777a51544f9f193520af11ef5, type: 2}
-  - {fileID: 11400000, guid: 8af389238a4afae429257e1fcdeb2ddb, type: 2}
-  - {fileID: 11400000, guid: 7c86fd86f046dd04891590b412c95ae2, type: 2}
-  - {fileID: 11400000, guid: 996db0e77393f054c9f71012c66b630f, type: 2}
-  - {fileID: 11400000, guid: 24425f0716b56154ba30aa2e83fcde34, type: 2}
-  machines:
-  - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}
-  - {fileID: 11400000, guid: afe92667d469f8e4db1f6801ebca5c2e, type: 2}
-  - {fileID: 11400000, guid: cc61c393a249e524cbe7d6033f15107d, type: 2}
-  - {fileID: 11400000, guid: 81e68f8d5bb078c47ac74ef38ee6a279, type: 2}
-  locomotiveConfig: {fileID: 11400000, guid: e59c71fd0ff0573478933e35e25f4619, type: 2}
-  trainView: {fileID: 540700458}
-  stormConfig: {fileID: 11400000, guid: e941d362d7bb74c4289034fb1f554e7d, type: 2}
-  stormView: {fileID: 464290518}
-  journeyConfig: {fileID: 11400000, guid: 2b6c1bfa2a9470947908907afac5a5f8, type: 2}
-  traits:
-  - {fileID: 11400000, guid: b14032ef04c6e09478a4a6626be9bc81, type: 2}
-  - {fileID: 11400000, guid: 8cebec1afad00a041bdd3fa156972f0a, type: 2}
-  - {fileID: 11400000, guid: 2fc1877bf0f901e459f9e8bddccf4d80, type: 2}
-  workbenchPanel: {fileID: 1799684360}
-  handView: {fileID: 1505933448}
-  resourcePanel: {fileID: 1807006933}
-  tooltipView: {fileID: 2078640636}
-  mapScreen: {fileID: 255177370}
-  stationScreen: {fileID: 1450702922}
-  disassembleButton: {fileID: 105789135}
---- !u!4 &979237767
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 979237765}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &985419229
 GameObject:
   m_ObjectHideFlags: 0
@@ -5161,7 +5161,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1450702921
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6872,7 +6872,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1799684359
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8642,6 +8642,7 @@ MonoBehaviour:
   hpGroup: {fileID: 910168180}
   hpFill: {fileID: 358318043}
   hpText: {fileID: 36527572}
+  followTarget: 1
 --- !u!4 &2078640637
 Transform:
   m_ObjectHideFlags: 0
@@ -8974,9 +8975,9 @@ CanvasRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 312635277}
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 979237767}
   - {fileID: 540700459}
   - {fileID: 1850331292}
   - {fileID: 1479645302}

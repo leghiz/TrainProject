@@ -14,10 +14,11 @@ public class StormModel
 
     private float pendingDamage;
 
-    public StormModel(StormConfig config, TrainModel train)
+    // startPosition — где буря стоит в начале (в клетках за локомотивом). Не задано — берётся startDistance из конфига.
+    public StormModel(StormConfig config, TrainModel train, float? startPosition = null)
     {
         Config = config;
-        Position = WagonsLength(train) + config.startDistance;
+        Position = startPosition ?? WagonsLength(train) + config.startDistance;
     }
 
     public float Speed
