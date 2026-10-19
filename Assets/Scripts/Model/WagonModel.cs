@@ -198,6 +198,28 @@ public class WagonModel : IMachineHost
         return true;
     }
 
+    // Снять станок с вагона целиком (для перестановки): хп, загрузка и свойство остаются при нём.
+    public bool TakeMachine(MachineModel machine)
+    {
+        if (!machines.Contains(machine)) return false;
+        RemoveMachine(machine);
+        return true;
+    }
+
+    public bool TryPlaceExisting(MachineModel machine, Vector2Int cell)
+    {
+        if (!CanPlace(machine.Config, cell)) return false;
+
+        machine.MoveTo(cell);
+        for (int x = 0; x < machine.Config.size.x; x++)
+        for (int y = 0; y < machine.Config.size.y; y++)
+            grid[cell.x + x, cell.y + y] = machine;
+
+        machines.Add(machine);
+        MachinePlaced?.Invoke(machine);
+        return true;
+    }
+
     public bool TryPlace(MachineConfig machine, Vector2Int cell, MachineTrait trait = null)
     {
         if (!CanPlace(machine, cell)) return false;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -37,6 +38,8 @@ public class WagonView : MonoBehaviour
 
     [Header("Подсветка установки")]
     [SerializeField] private SpriteRenderer placementPreview;
+    [Tooltip("Сетка свободных клеток, пока станок в руке. Если задана — вместо цветного прямоугольника")]
+    [SerializeField] private PlacementGridView placementGrid;
     [SerializeField] private Color canPlaceColor = new Color(0.3f, 1f, 0.3f, 0.45f);
     [SerializeField] private Color cannotPlaceColor = new Color(1f, 0.3f, 0.3f, 0.45f);
 
@@ -44,12 +47,18 @@ public class WagonView : MonoBehaviour
     public event Action HoverExited; 
     public event Action<Vector2Int> CellReleased;
     public event Action<Vector2Int> CellRightPressed;
+    public event Action<Vector2Int> CellPressed;
 
     public Vector2Int? HoveredCell { get; private set; } 
 
     private Vector2Int gridSize;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
+
+    public void SetMaterial(Material material)
+    {
+        if (material != null) body.sharedMaterial = material;
+    }
 
     public Vector3 TooltipPoint => transform.position + Vector3.up * Height / 2f + (Vector3)tooltipOffset;
 
@@ -63,10 +72,11 @@ public class WagonView : MonoBehaviour
     
     private bool fogged;
 
+    // В тумане вагон видно, но навестись и нажать на него и его станки нельзя.
     public void SetFogged(bool value)
     {
         fogged = value;
-        foreach (var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = !value;
+        foreach (var outline in GetComponentsInChildren<HoverOutline>(true)) outline.enabled = !value;
     }
 
     public void SetGridSize(Vector2Int size) => gridSize = size;
@@ -90,19 +100,38 @@ public class WagonView : MonoBehaviour
     {
         var machine = Instantiate(machinePrefab, transform);
         machine.transform.localPosition = AreaCenter(cell, size);
-        if (fogged) foreach (var r in machine.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        if (fogged) foreach (var outline in machine.GetComponentsInChildren<HoverOutline>(true)) outline.enabled = false;
         return machine;
+    }
+
+    public void ShowGrid(IReadOnlyList<Vector2Int> freeCells)
+    {
+        if (placementGrid != null) placementGrid.Show(freeCells, cell => AreaCenter(cell, Vector2Int.one));
+    }
+
+    public void HideGrid()
+    {
+        if (placementGrid != null) placementGrid.Hide();
     }
 
     public void ShowPlacementPreview(Vector2Int cell, Vector2Int size, bool canPlace)
     {
+        if (placementGrid != null)
+        {
+            placementGrid.Highlight(cell, size, canPlace);
+            return;
+        }
         placementPreview.gameObject.SetActive(true);
         placementPreview.color = canPlace ? canPlaceColor : cannotPlaceColor;
         placementPreview.transform.localPosition = AreaCenter(cell, size);
         placementPreview.transform.localScale = new Vector3(size.x * CellUnits, size.y * CellUnits, 1f);
     }
 
-    public void HidePlacementPreview() => placementPreview.gameObject.SetActive(false);
+    public void HidePlacementPreview()
+    {
+        placementPreview.gameObject.SetActive(false);
+        if (placementGrid != null) placementGrid.ClearHighlight();
+    }
 
     public void RemoveMachine(MachineView machine) => Destroy(machine.gameObject);
     
@@ -111,7 +140,7 @@ public class WagonView : MonoBehaviour
         var box = Instantiate(boxPrefab, transform);
         box.transform.localPosition = AreaCenter(cell, size);
         box.Setup(sprite, (Vector2)size * CellUnits);
-        if (fogged) foreach (var r in box.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        if (fogged) foreach (var outline in box.GetComponentsInChildren<HoverOutline>(true)) outline.enabled = false;
         return box;
     }
 
@@ -143,6 +172,7 @@ public class WagonView : MonoBehaviour
 
         if (cell.HasValue && mouse.leftButton.wasReleasedThisFrame && !PointerOverUI.Check()) CellReleased?.Invoke(cell.Value);
         if (cell.HasValue && mouse.rightButton.wasPressedThisFrame && !PointerOverUI.Check()) CellRightPressed?.Invoke(cell.Value);
+        if (cell.HasValue && mouse.leftButton.wasPressedThisFrame && !PointerOverUI.Check()) CellPressed?.Invoke(cell.Value);
     }
     
     private void Roll()
