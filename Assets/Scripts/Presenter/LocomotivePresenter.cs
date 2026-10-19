@@ -8,17 +8,19 @@ public class LocomotivePresenter : IDisposable
     private readonly LocomotiveView view;
     private readonly BuildModel build;
     private readonly ResourceStorageModel storage;
+    private readonly HoverModel hover;
 
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<PlateModel, MachineView> plates = new Dictionary<PlateModel, MachineView>();
 
-    public LocomotivePresenter(LocomotiveModel model, LocomotiveView view, BuildModel build, ResourceStorageModel storage)
+    public LocomotivePresenter(LocomotiveModel model, LocomotiveView view, BuildModel build, ResourceStorageModel storage, HoverModel hover)
     {
         this.model = model;
         this.view = view;
         this.build = build;
         this.storage = storage;
+        this.hover = hover;
 
         view.SetSprite(model.Config.sprite);
         if (model.Plating.SlotCount != view.PlateSlotCount)
@@ -44,15 +46,32 @@ public class LocomotivePresenter : IDisposable
         view.PlateSlotExited += view.HidePlacementPreview;
         view.PlateSlotReleased += OnPlateSlotReleased;
         view.BoilerClicked += OnBoilerClicked;
+        view.PartHovered += OnPartHovered;
         build.SelectedChanged += OnSelectedChanged;
     }
-    
+
+    private void OnPartHovered(LocomotivePart part)
+    {
+        Vector3 anchor = view.TooltipPoint;
+        switch (part)
+        {
+            case LocomotivePart.Boiler when model.Boiler != null:
+                hover.Show(this, () => TooltipTexts.Boiler(model), anchor); break;
+            case LocomotivePart.Workbench when model.Workbench != null:
+                hover.Show(this, () => TooltipTexts.Machine(model.Workbench, false), anchor); break;
+            case LocomotivePart.Welder when model.Welder != null:
+                var welder = model.Welder;
+                hover.Show(this, () => TooltipTexts.Machine(welder, false), anchor); break;
+            default:
+                hover.Clear(this); break;
+        }
+    }
+
     private void RefreshHp()
     {
         var plating = model.Plating;
-        view.SetHp(plating.HasPlates
-            ? (float)plating.TotalHp / plating.TotalMaxHp
-            : (float)model.Hp / model.Config.maxHp);
+        if (plating.HasPlates) view.SetHp(plating.TotalHp, plating.TotalMaxHp);
+        else view.SetHp(model.Hp, model.MaxHp);
     }
 
     private void OnHpChanged(int hp) => RefreshHp();
@@ -97,7 +116,11 @@ public class LocomotivePresenter : IDisposable
         model.Boiler.Load(storage, int.MaxValue);
     }
 
-    private void OnDestroyed() => view.ShowDestroyed();
+    private void OnDestroyed()
+    {
+        hover.Clear(this);
+        view.ShowDestroyed();
+    }
 
     private void ShowMachine(MachineModel machine, LocomotiveSlot slot)
     {
@@ -157,7 +180,9 @@ public class LocomotivePresenter : IDisposable
         view.PlateSlotExited -= view.HidePlacementPreview;
         view.PlateSlotReleased -= OnPlateSlotReleased;
         view.BoilerClicked -= OnBoilerClicked;
+        view.PartHovered -= OnPartHovered;
         build.SelectedChanged -= OnSelectedChanged;
+        hover.Clear(this);
 
         foreach (var entry in machines.Values) entry.presenter.Dispose();
         machines.Clear();

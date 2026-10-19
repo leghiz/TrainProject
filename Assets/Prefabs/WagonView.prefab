@@ -354,6 +354,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WagonView
   body: {fileID: 3080150900314599553}
   hpFill: {fileID: 6202769487873952233}
+  hpBar: {fileID: 6694231784921728698}
+  tooltipOffset: {x: 0, y: 4}
   machinePrefab: {fileID: 7295704829623647403, guid: db277255ed0126e409e08392c891e115, type: 3}
   boxPrefab: {fileID: 4106746722333408827, guid: 3ae86082b02be8044ae3ff60c152b040, type: 3}
   cellSize: 16

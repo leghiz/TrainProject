@@ -8,16 +8,18 @@ public class WagonPresenter : IDisposable
     private readonly WagonView view;
     private readonly BuildModel build;
     private readonly ResourceStorageModel storage;
+    private readonly HoverModel hover;
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
 
-    public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage)
+    public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage, HoverModel hover)
     {
         this.model = model;
         this.view = view;
         this.build = build;
         this.storage = storage;
+        this.hover = hover;
 
         view.SetSprite(model.Config.sprite);
         view.SetGridSize(model.Config.size);
@@ -33,19 +35,39 @@ public class WagonPresenter : IDisposable
         model.BoxRemoved += HideBox;
 
         view.CellHovered += UpdatePreview;
+        view.CellHovered += UpdateHover;
         view.HoverExited += view.HidePlacementPreview;
+        view.HoverExited += ClearHover;
         view.CellReleased += OnCellReleased;
         build.SelectedChanged += OnSelectedChanged;
     }
 
     private void UpdateHp(int hp) => view.SetHp((float)hp / model.Config.maxHp);
 
-    private void OnDestroyed() => view.ShowDestroyed();
+    private void OnDestroyed()
+    {
+        ClearHover();
+        view.ShowDestroyed();
+    }
+
+    // Под курсором станок, ящик или пустая клетка — тултип про то, что там лежит.
+    private void UpdateHover(Vector2Int cell)
+    {
+        Vector3 anchor = view.TooltipPoint;
+        var machine = model.GetMachineAt(cell);
+        var box = model.GetBoxAt(cell);
+        if (machine != null) hover.Show(this, () => TooltipTexts.Machine(machine), anchor);
+        else if (box != null) hover.Show(this, () => TooltipTexts.Box(box), anchor);
+        else hover.Show(this, () => TooltipTexts.Wagon(model), anchor);
+    }
+
+    private void ClearHover() => hover.Clear(this);
     
     private void ShowMachine(MachineModel machine)
     {
         var machineView = view.AddMachine(machine.Cell, machine.Config.size);
         machines[machine] = (new MachinePresenter(machine, machineView), machineView);
+        if (view.HoveredCell.HasValue) UpdateHover(view.HoveredCell.Value);
     }
     private void HideMachine(MachineModel machine)
     {
@@ -53,7 +75,13 @@ public class WagonPresenter : IDisposable
         entry.presenter.Dispose();
         view.RemoveMachine(entry.view);
         machines.Remove(machine);
-        if (view.HoveredCell.HasValue) UpdatePreview(view.HoveredCell.Value);
+        if (view.HoveredCell.HasValue) RefreshHovered(view.HoveredCell.Value);
+    }
+
+    private void RefreshHovered(Vector2Int cell)
+    {
+        UpdatePreview(cell);
+        UpdateHover(cell);
     }
 
     private void ShowBox(CargoBoxModel box) =>
@@ -64,7 +92,7 @@ public class WagonPresenter : IDisposable
         if (!boxes.TryGetValue(box, out var boxView)) return;
         view.RemoveBox(boxView);
         boxes.Remove(box);
-        if (view.HoveredCell.HasValue) UpdatePreview(view.HoveredCell.Value);
+        if (view.HoveredCell.HasValue) RefreshHovered(view.HoveredCell.Value);
     }
 
     private void UpdatePreview(Vector2Int cell)
@@ -110,9 +138,12 @@ public class WagonPresenter : IDisposable
         model.BoxRemoved -= HideBox;
 
         view.CellHovered -= UpdatePreview;
+        view.CellHovered -= UpdateHover;
         view.HoverExited -= view.HidePlacementPreview;
+        view.HoverExited -= ClearHover;
         view.CellReleased -= OnCellReleased;
         build.SelectedChanged -= OnSelectedChanged;
+        ClearHover();
 
         foreach (var entry in machines.Values) entry.presenter.Dispose();
         machines.Clear();
