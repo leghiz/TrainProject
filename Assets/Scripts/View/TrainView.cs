@@ -66,6 +66,29 @@ public class TrainView : MonoBehaviour
 
     private Component fogFocus;
 
+    // Что сейчас видно сквозь туман (вагон или локомотив ближе всех к камере) — по нему окно тумана.
+    public Bounds? FogFocusBounds
+    {
+        get
+        {
+            if (!fog || fogFocus == null) return null;
+            if (fogFocus is WagonView wagon) return new Bounds(wagon.transform.position, new Vector3(wagon.Width, wagon.Height, 0f));
+            if (fogFocus is LocomotiveView engine) return new Bounds(engine.transform.position, new Vector3(engine.Width, engine.Height, 0f));
+            return null;
+        }
+    }
+
+    // Левый край последнего вагона (или локомотива, если вагонов нет), в мировых координатах.
+    public float TailLeft
+    {
+        get
+        {
+            if (wagons.Count == 0) return locomotive != null ? locomotive.transform.position.x - locomotive.Width / 2f : transform.position.x;
+            var last = wagons[wagons.Count - 1];
+            return last.transform.position.x - last.Width / 2f;
+        }
+    }
+
     private void ApplyFog()
     {
         fogFocus = fog ? PartNearestToCamera() : null;
