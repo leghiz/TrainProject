@@ -18,6 +18,13 @@ MonoBehaviour:
   length: 5
   boiler: {fileID: 11400000, guid: 7303b1236bbef914cb1ee0049cd762fe, type: 2}
   workbench: {fileID: 11400000, guid: 3f24521e091b15846b45c70116d8d512, type: 2}
+  maxPlates: 3
+  recipes:
+  - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}
+  - {fileID: 11400000, guid: cc61c393a249e524cbe7d6033f15107d, type: 2}
+  - {fileID: 11400000, guid: 81e68f8d5bb078c47ac74ef38ee6a279, type: 2}
+  - {fileID: 11400000, guid: afe92667d469f8e4db1f6801ebca5c2e, type: 2}
+  - {fileID: 11400000, guid: 5d3f3342900539248aa480c53d90312b, type: 2}
   boilerLevels:
   - tank: 30
     speed: 1

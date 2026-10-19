@@ -27,7 +27,7 @@ public class WagonView : MonoBehaviour
 
     public event Action<Vector2Int> CellHovered; 
     public event Action HoverExited; 
-    public event Action<Vector2Int> CellClicked; 
+    public event Action<Vector2Int> CellReleased;
 
     public Vector2Int? HoveredCell { get; private set; } 
 
@@ -48,7 +48,7 @@ public class WagonView : MonoBehaviour
 
     public void SetGridSize(Vector2Int size) => gridSize = size;
 
-    public void SetHp(float normalized) => hpFill.localScale = new Vector3(normalized, 1f, 1f); // 0..1
+    public void SetHp(float normalized) => hpFill.localScale = new Vector3(normalized, 1f, 1f);
 
     public void ShowDestroyed() => gameObject.SetActive(false);
 
@@ -100,7 +100,7 @@ public class WagonView : MonoBehaviour
             else HoverExited?.Invoke();
         }
 
-        if (cell.HasValue && mouse.leftButton.wasPressedThisFrame) CellClicked?.Invoke(cell.Value);
+        if (cell.HasValue && mouse.leftButton.wasReleasedThisFrame && !PointerOverUI.Check()) CellReleased?.Invoke(cell.Value);
     }
     
     public Vector2 CellToLocal(Vector2Int cell) => GridOrigin + (Vector2)cell * CellUnits;

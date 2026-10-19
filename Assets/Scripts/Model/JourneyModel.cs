@@ -44,6 +44,8 @@ public class JourneyModel
         Storage = storage;
         random = config.seed == 0 ? new Random() : new Random(config.seed);
         Map = new MapModel(config, random);
+        storage.Add(ResourceType.Wood, config.startWood);
+        storage.Add(ResourceType.Scrap, config.startScrap);
         train.Locomotive.Destroyed += OnLocomotiveDestroyed;
     }
     

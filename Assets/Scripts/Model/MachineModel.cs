@@ -51,6 +51,7 @@ public class MachineModel
         Cell = cell;
         Trait = trait;
         ChargeLeft = config.charge;
+        Capacity = config.capacity;
         Hp = config.maxHp;
     }
 

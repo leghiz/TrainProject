@@ -7,10 +7,19 @@ public class BuildModel
 
     public event Action<MachineConfig> SelectedChanged;
 
+    public event Action<MachineConfig, MachineTrait> Cancelled;
+
     public void Select(MachineConfig machine, MachineTrait trait = null)
     {
         Selected = machine;
         SelectedTrait = machine != null ? trait : null;
         SelectedChanged?.Invoke(machine);
+    }
+
+    public void Cancel()
+    {
+        if (Selected == null) return;
+        Cancelled?.Invoke(Selected, SelectedTrait);
+        Select(null);
     }
 }

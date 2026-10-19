@@ -10,6 +10,11 @@ public class JourneyConfig : ScriptableObject
     [Tooltip("Сколько секунд поезд едет от узла до узла")]
     [Min(1f)] public float travelSeconds = 60f;
 
+    [Header("Старт")]
+    [Tooltip("Сколько ресурсов на складе в начале забега")]
+    [Min(0)] public int startWood = 6;
+    [Min(0)] public int startScrap = 4;
+
     [Header("Карта")]
     [Tooltip("Сколько узлов может быть в одном столбце карты")]
     [Min(1)] public int minNodesPerColumn = 2;

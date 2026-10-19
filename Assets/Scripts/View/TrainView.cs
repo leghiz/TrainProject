@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class TrainView : MonoBehaviour
 {
-    [SerializeField] private LocomotiveView locomotivePrefab;
+    [Tooltip("Локомотив из сцены (дочерний объект Train). Где его поставили — там он и стоит, вагоны цепляются за ним влево")]
+    [SerializeField] private LocomotiveView locomotive;
     [SerializeField] private WagonView wagonPrefab;
 
     [Tooltip("Расстояние между вагонами (сцепка), в единицах мира")]
@@ -12,15 +13,13 @@ public class TrainView : MonoBehaviour
     [Tooltip("Размер одной клетки в единицах мира (при PPU = 1 это 16)")]
     [SerializeField] private float cellSize = 16f;
 
-    private LocomotiveView locomotive;
-    private readonly List<WagonView> wagons = new List<WagonView>(); 
+    private readonly List<WagonView> wagons = new List<WagonView>();
 
-    public LocomotiveView CreateLocomotive()
-    {
-        locomotive = Instantiate(locomotivePrefab, transform);
-        return locomotive;
-    }
-    
+    public LocomotiveView Locomotive => locomotive;
+
+    private float LocomotiveLeft => locomotive != null ? locomotive.transform.localPosition.x - locomotive.Width / 2f : 0f;
+    private float GroundY => locomotive != null ? locomotive.transform.localPosition.y - locomotive.Height / 2f : 0f;
+
     public WagonView AddWagon()
     {
         var wagon = Instantiate(wagonPrefab, transform);
@@ -36,12 +35,7 @@ public class TrainView : MonoBehaviour
     
     public void Arrange()
     {
-        float right = 0f;
-        if (locomotive != null)
-        {
-            Place(locomotive.transform, locomotive.Width, locomotive.Height, right);
-            right -= locomotive.Width + gap;
-        }
+        float right = locomotive != null ? LocomotiveLeft - gap : 0f;
         foreach (var wagon in wagons)
         {
             Place(wagon.transform, wagon.Width, wagon.Height, right);
@@ -67,7 +61,7 @@ public class TrainView : MonoBehaviour
     
     public float CellsToX(float cellsBehindLocomotive)
     {
-        float x = locomotive != null ? -locomotive.Width : 0f; 
+        float x = LocomotiveLeft;
         if (cellsBehindLocomotive <= 0f) return x - cellsBehindLocomotive * cellSize;
 
         float remaining = cellsBehindLocomotive;
@@ -82,6 +76,6 @@ public class TrainView : MonoBehaviour
         return x - remaining * cellSize;
     }
 
-    private static void Place(Transform target, float width, float height, float right) =>
-        target.localPosition = new Vector3(right - width / 2f, height / 2f, 0f);
+    private void Place(Transform target, float width, float height, float right) =>
+        target.localPosition = new Vector3(right - width / 2f, GroundY + height / 2f, 0f);
 }

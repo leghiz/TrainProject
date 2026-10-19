@@ -20,6 +20,23 @@ public class LocomotiveView : MonoBehaviour
     [Tooltip("Размер одной клетки в единицах мира (при PPU = 1 это 16)")]
     [SerializeField] private float cellSize = 16f;
 
+    [Tooltip("Сколько клеток занимает верстак: по этой области ловится клик")]
+    [SerializeField] private Vector2Int workbenchCells = new Vector2Int(2, 1);
+
+    [Tooltip("Сколько клеток занимает Коптильня: по этой области ловится клик (загрузить дерево)")]
+    [SerializeField] private Vector2Int boilerCells = new Vector2Int(2, 1);
+
+    [Header("Обшивка")]
+    [Tooltip("Точки, куда вешаются листы. Двигать под спрайт локомотива. Сколько точек — столько и листов (должно совпадать с maxPlates у Locomotive.asset)")]
+    [SerializeField] private Transform[] plateSlots;
+
+    [Tooltip("Размер области вокруг точки, над которой можно отпустить лист (в единицах мира)")]
+    [SerializeField] private Vector2 plateSlotSize = new Vector2(16f, 16f);
+
+    [Header("Готовый станок с верстака")]
+    [Tooltip("Иконка над локомотивом: её хватают мышкой и тащат на вагон")]
+    [SerializeField] private SpriteRenderer readyIcon;
+
     [Header("Подсветка установки")]
     [SerializeField] private SpriteRenderer placementPreview;
     [SerializeField] private Color canPlaceColor = new Color(0.3f, 1f, 0.3f, 0.45f);
@@ -27,9 +44,17 @@ public class LocomotiveView : MonoBehaviour
 
     public event Action WelderSlotHovered;
     public event Action WelderSlotExited;
-    public event Action WelderSlotClicked;
+    public event Action WelderSlotReleased;
+    public event Action WorkbenchClicked;
+    public event Action BoilerClicked;
+    public event Action ReadyIconPressed;
+    public event Action<int> PlateSlotHovered;
+    public event Action PlateSlotExited;
+    public event Action<int> PlateSlotReleased;
 
     public bool IsWelderSlotHovered { get; private set; }
+    public int? HoveredPlateSlot { get; private set; }
+    public int PlateSlotCount => plateSlots != null ? plateSlots.Length : 0;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
 
@@ -67,6 +92,29 @@ public class LocomotiveView : MonoBehaviour
 
     public void HidePlacementPreview() => placementPreview.gameObject.SetActive(false);
 
+    public MachineView AddPlate(int slot)
+    {
+        var plate = Instantiate(machinePrefab, plateSlots[slot].position, Quaternion.identity, transform);
+        if (fogged) foreach (var r in plate.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        return plate;
+    }
+
+    public void ShowPlatePreview(int slot, bool canPlace)
+    {
+        placementPreview.gameObject.SetActive(true);
+        placementPreview.color = canPlace ? canPlaceColor : cannotPlaceColor;
+        placementPreview.transform.position = plateSlots[slot].position;
+        placementPreview.transform.localScale = new Vector3(plateSlotSize.x, plateSlotSize.y, 1f);
+    }
+
+    public void ShowReady(Sprite sprite)
+    {
+        readyIcon.sprite = sprite;
+        readyIcon.gameObject.SetActive(true);
+    }
+
+    public void HideReady() => readyIcon.gameObject.SetActive(false);
+
     private void Update()
     {
         var mouse = Mouse.current;
@@ -74,17 +122,55 @@ public class LocomotiveView : MonoBehaviour
         if (mouse == null || cam == null) return;
 
         Vector2 world = cam.ScreenToWorldPoint(mouse.position.ReadValue());
-        Vector2 offset = world - (Vector2)welderSlot.position;
-        bool hovered = Mathf.Abs(offset.x) <= cellSize / 2f && Mathf.Abs(offset.y) <= cellSize / 2f;
+        bool hovered = IsOver(world, welderSlot, Vector2Int.one);
+        int? plateSlot = PlateSlotAt(world);
 
-        if (hovered != IsWelderSlotHovered)
+        bool welderChanged = hovered != IsWelderSlotHovered;
+        bool plateChanged = plateSlot != HoveredPlateSlot;
+        IsWelderSlotHovered = hovered;
+        HoveredPlateSlot = plateSlot;
+        if (welderChanged && !hovered) WelderSlotExited?.Invoke();
+        if (plateChanged && !plateSlot.HasValue) PlateSlotExited?.Invoke();
+        if (welderChanged && hovered) WelderSlotHovered?.Invoke();
+        if (plateChanged && plateSlot.HasValue) PlateSlotHovered?.Invoke(plateSlot.Value);
+
+        if (PointerOverUI.Check()) return;
+
+        if (mouse.leftButton.wasReleasedThisFrame)
         {
-            IsWelderSlotHovered = hovered;
-            if (hovered) WelderSlotHovered?.Invoke();
-            else WelderSlotExited?.Invoke();
+            if (hovered) WelderSlotReleased?.Invoke();
+            if (plateSlot.HasValue) PlateSlotReleased?.Invoke(plateSlot.Value);
         }
 
-        if (hovered && mouse.leftButton.wasPressedThisFrame) WelderSlotClicked?.Invoke();
+        if (!mouse.leftButton.wasPressedThisFrame) return;
+        if (IsOverReadyIcon(world)) ReadyIconPressed?.Invoke();
+        else if (IsOver(world, workbenchSlot, workbenchCells)) WorkbenchClicked?.Invoke();
+        else if (IsOver(world, boilerSlot, boilerCells)) BoilerClicked?.Invoke();
+    }
+
+    private bool IsOver(Vector2 world, Transform slot, Vector2Int cells)
+    {
+        Vector2 offset = world - (Vector2)slot.position;
+        return Mathf.Abs(offset.x) <= cells.x * cellSize / 2f && Mathf.Abs(offset.y) <= cells.y * cellSize / 2f;
+    }
+
+    private int? PlateSlotAt(Vector2 world)
+    {
+        if (plateSlots == null) return null;
+        for (int i = 0; i < plateSlots.Length; i++)
+        {
+            if (plateSlots[i] == null) continue;
+            Vector2 offset = world - (Vector2)plateSlots[i].position;
+            if (Mathf.Abs(offset.x) <= plateSlotSize.x / 2f && Mathf.Abs(offset.y) <= plateSlotSize.y / 2f) return i;
+        }
+        return null;
+    }
+
+    private bool IsOverReadyIcon(Vector2 world)
+    {
+        if (!readyIcon.gameObject.activeSelf || readyIcon.sprite == null) return false;
+        var bounds = readyIcon.bounds;
+        return world.x >= bounds.min.x && world.x <= bounds.max.x && world.y >= bounds.min.y && world.y <= bounds.max.y;
     }
 
     private Transform SlotAnchor(LocomotiveSlot slot)

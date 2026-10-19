@@ -14,6 +14,7 @@ public class MachineConfig : ScriptableObject
     [Header("Крафт")]
     [Min(0)] public int craftWood;
     [Min(0)] public int craftScrap;
+    [Min(0)] public int craftIngots;
 
     [Header("Работа")]
     [Tooltip("Что станок делает при срабатывании")]
@@ -40,8 +41,12 @@ public class MachineConfig : ScriptableObject
     [Tooltip("Repair: сколько всего хп станок может отдать. Отдал всё — исчезает. 0 = без ограничения")]
     [Min(0)] public int charge;
 
+    [Tooltip("Convert/Fuel: сколько ресурса влезает в станок. 0 = без ограничения. У Коптильни вместимость задаёт бак уровня")]
+    [Min(0)] public int capacity;
+
     [Header("Прочность")]
-    [Tooltip("Хп станка: дождь наносит урон станкам в вагонах, при 0 станок ломается и пропадает")]
+    [Tooltip("Хп станка: дождь наносит урон станкам в вагонах, при 0 станок ломается и пропадает. " +
+             "Plating: хп одного листа (с двумя листами у каждого вдвое больше, с тремя — втрое)")]
     [Min(1)] public int maxHp = 20;
 }
 
@@ -51,5 +56,6 @@ public enum MachineAction
     Repair,
     Convert,
     Fuel,
-    None 
+    None,
+    Plating
 }
