@@ -1,7 +1,7 @@
 using System;
 
-// Разборка удержанием ПКМ: отпустили раньше времени — отмена.
-// Кружок прогресса делает напарник: ему нужны DismantleModel.IsActive, Progress (0..1) и событие Changed.
+// Удержание ПКМ (разборка) и ЛКМ (взять станок в руку): отпустили раньше времени — отмена.
+// Кружок прогресса — HoldProgressView: он читает DismantleModel.IsActive и Progress (0..1).
 public class DismantlePresenter : IDisposable
 {
     private readonly DismantleModel model;
@@ -13,7 +13,12 @@ public class DismantlePresenter : IDisposable
         this.hand = hand;
 
         hand.RightReleased += model.CancelAny;
+        hand.Released += model.CancelAny;
     }
 
-    public void Dispose() => hand.RightReleased -= model.CancelAny;
+    public void Dispose()
+    {
+        hand.RightReleased -= model.CancelAny;
+        hand.Released -= model.CancelAny;
+    }
 }
