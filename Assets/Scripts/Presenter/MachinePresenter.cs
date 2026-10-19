@@ -11,6 +11,7 @@ public class MachinePresenter : IDisposable
         this.view = view;
 
         view.SetSprite(model.Config.sprite);
+        if (model.Trait != null) view.SetMaterial(model.Trait.material);
         view.SetWorking(model.IsWorking);
 
         model.WorkingChanged += view.SetWorking;

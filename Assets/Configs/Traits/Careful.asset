@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ecf7594fce0991409d895dfc6fe857b, type: 3}
   m_Name: Careful
   m_EditorClassIdentifier: Assembly-CSharp::MachineTrait
-  displayName: "\u0410\u043A\u043A\u0443\u0440\u0430\u0442\u043D\u044B\u0439"
+  displayName: Careful
   speedMultiplier: 1
   costMultiplier: 0.5
   rainproof: 0
+  material: {fileID: 2100000, guid: 24f6868051b452d418675c045c84a150, type: 2}

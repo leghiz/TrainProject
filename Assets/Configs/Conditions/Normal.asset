@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bdc452758f6aae4fbe428f8cf6d5799, type: 3}
   m_Name: Normal
   m_EditorClassIdentifier: Assembly-CSharp::WagonCondition
-  displayName: "\u041E\u0431\u044B\u0447\u043D\u044B\u0439"
+  displayName: Standard
   resourceMultiplier: 1
   weightMultiplier: 1

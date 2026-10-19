@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bdc452758f6aae4fbe428f8cf6d5799, type: 3}
   m_Name: Ghost
   m_EditorClassIdentifier: Assembly-CSharp::WagonCondition
-  displayName: "\u041F\u0440\u0438\u0437\u0440\u0430\u0447\u043D\u044B\u0439"
+  displayName: Ghost
   resourceMultiplier: 0.25
   weightMultiplier: 0
+  material: {fileID: 2100000, guid: e62e4d636ce83514099ae4e1a8dcfda4, type: 2}

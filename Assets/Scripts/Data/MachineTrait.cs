@@ -13,4 +13,7 @@ public class MachineTrait : ScriptableObject
 
     [Tooltip("Не получает урон от дождя (Водостойкий)")]
     public bool rainproof;
+
+    [Tooltip("Материал с шейдером свойства (прыжки, синий отлив, блики). Пусто — обычный спрайт")]
+    public Material material;
 }

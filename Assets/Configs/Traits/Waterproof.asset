@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ecf7594fce0991409d895dfc6fe857b, type: 3}
   m_Name: Waterproof
   m_EditorClassIdentifier: Assembly-CSharp::MachineTrait
-  displayName: "\u0412\u043E\u0434\u043E\u0441\u0442\u043E\u0439\u043A\u0438\u0439"
+  displayName: Waterproof
   speedMultiplier: 1
   costMultiplier: 1
   rainproof: 1
+  material: {fileID: 2100000, guid: 2463b3686a4d99e4e9cc4195272f86cc, type: 2}

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ecf7594fce0991409d895dfc6fe857b, type: 3}
   m_Name: Crazy
   m_EditorClassIdentifier: Assembly-CSharp::MachineTrait
-  displayName: "\u0411\u0435\u0437\u0443\u043C\u043D\u044B\u0439"
+  displayName: Mad
   speedMultiplier: 2
   costMultiplier: 1
   rainproof: 0
+  material: {fileID: 2100000, guid: 1a773f9bdcca5d14f8f42a999a01c886, type: 2}

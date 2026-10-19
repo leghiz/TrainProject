@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bdc452758f6aae4fbe428f8cf6d5799, type: 3}
   m_Name: New
   m_EditorClassIdentifier: Assembly-CSharp::WagonCondition
-  displayName: "\u041D\u043E\u0432\u044B\u0439"
+  displayName: New
   resourceMultiplier: 2
   weightMultiplier: 1
+  material: {fileID: 2100000, guid: d18831e7ed7e1e941a811a0f4f9c19ab, type: 2}
