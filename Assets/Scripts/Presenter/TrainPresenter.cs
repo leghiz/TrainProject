@@ -35,7 +35,7 @@ public class TrainPresenter : IDisposable
 
     private void ShowWagon(WagonModel wagon)
     {
-        var wagonView = view.AddWagon();
+        var wagonView = view.AddWagon(model.IndexOf(wagon));
         wagons[wagon] = (new WagonPresenter(wagon, wagonView, build, storage, hover, cargoSelection, dismantle), wagonView);
     }
 

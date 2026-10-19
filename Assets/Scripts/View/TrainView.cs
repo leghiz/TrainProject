@@ -27,10 +27,12 @@ public class TrainView : MonoBehaviour
     private float LocomotiveLeft => locomotive != null ? locomotive.transform.localPosition.x - locomotive.Width / 2f : 0f;
     private float GroundY => locomotive != null ? locomotive.transform.localPosition.y - locomotive.Height / 2f : 0f;
 
-    public WagonView AddWagon()
+    // index — место в составе (0 — сразу за локомотивом); меньше 0 — в хвост.
+    public WagonView AddWagon(int index = -1)
     {
         var wagon = Instantiate(wagonPrefab, transform);
-        wagons.Add(wagon);
+        if (index < 0 || index > wagons.Count) wagons.Add(wagon);
+        else wagons.Insert(index, wagon);
         return wagon;
     }
 
