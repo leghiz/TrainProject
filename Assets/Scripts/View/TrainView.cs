@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// ExecuteAlways — только ради предпросмотра поезда в редакторе (см. ниже).
 [ExecuteAlways]
 public class TrainView : MonoBehaviour
 {
@@ -65,11 +64,32 @@ public class TrainView : MonoBehaviour
         ApplyFog();
     }
 
+    private Component fogFocus;
+
     private void ApplyFog()
     {
-        var center = wagons.Count > 0 ? wagons[wagons.Count / 2] : null;
-        if (locomotive != null) locomotive.SetFogged(fog && center != null);
-        foreach (var wagon in wagons) wagon.SetFogged(fog && wagon != center);
+        fogFocus = fog ? PartNearestToCamera() : null;
+        if (locomotive != null) locomotive.SetFogged(fog && fogFocus != locomotive);
+        foreach (var wagon in wagons) wagon.SetFogged(fog && fogFocus != wagon);
+    }
+
+    private Component PartNearestToCamera()
+    {
+        var cam = Camera.main;
+        float cameraX = cam != null ? cam.transform.position.x : 0f;
+        Component nearest = locomotive;
+        float best = locomotive != null ? Mathf.Abs(locomotive.transform.position.x - cameraX) : float.MaxValue;
+        foreach (var wagon in wagons)
+        {
+            float distance = Mathf.Abs(wagon.transform.position.x - cameraX);
+            if (distance < best) { best = distance; nearest = wagon; }
+        }
+        return nearest;
+    }
+
+    private void LateUpdate()
+    {
+        if (Application.isPlaying && fog && PartNearestToCamera() != fogFocus) ApplyFog();
     }
     
     public float CellsToX(float cellsBehindLocomotive)
@@ -89,7 +109,6 @@ public class TrainView : MonoBehaviour
         return x - remaining * cellSize;
     }
 
-    // Обратное к CellsToX: сколько клеток за локомотивом до точки x (в координатах Train).
     public float XToCells(float localX)
     {
         float x = LocomotiveLeft;
@@ -111,8 +130,6 @@ public class TrainView : MonoBehaviour
         target.localPosition = new Vector3(right - width / 2f, GroundY + height / 2f, 0f);
 
 #if UNITY_EDITOR
-    // Предпросмотр: вагоны-картинки только в редакторе. Не сохраняются в сцену,
-    // не выделяются кликом и исчезают при запуске игры.
     private readonly List<WagonView> previews = new List<WagonView>();
 
     private void OnEnable()
@@ -131,7 +148,6 @@ public class TrainView : MonoBehaviour
         };
     }
 
-    // В редакторе Update срабатывает, когда что-то меняется в сцене: подвинули локомотив — вагоны едут следом.
     private void Update()
     {
         if (!Application.isPlaying && previews.Count > 0) Arrange(previews);

@@ -15,6 +15,9 @@ public class BoilerUpgradeView : MonoBehaviour
     public event Action Clicked;
 
     private bool interactable;
+    private bool blocked;
+    
+    public void SetBlocked(bool value) => blocked = value;
 
     public void Set(string cost, bool canUpgrade)
     {
@@ -30,7 +33,7 @@ public class BoilerUpgradeView : MonoBehaviour
     {
         var mouse = Mouse.current;
         var cam = Camera.main;
-        if (!interactable || mouse == null || cam == null || !mouse.leftButton.wasPressedThisFrame) return;
+        if (!interactable || blocked || mouse == null || cam == null || !mouse.leftButton.wasPressedThisFrame) return;
         if (PointerOverUI.Check()) return;
 
         Vector2 world = cam.ScreenToWorldPoint(mouse.position.ReadValue());

@@ -69,8 +69,7 @@ public class WorkbenchModel
         if (machine == null || HasReady) return;
         SetReady(machine, trait);
     }
-
-    // Станок со стороны (из разобранного ящика) встаёт туда же, где появляются скрафченные.
+    
     public bool TryGive(MachineConfig machine, MachineTrait trait)
     {
         if (machine == null || HasReady) return false;

@@ -14,8 +14,10 @@ public class TooltipPresenter : IDisposable
         hover.Changed += Refresh;
     }
 
+    // Каждый кадр: хп и запасы в тултипе меняются, пока на него смотришь.
     public void Tick() => Refresh();
 
+    // В тумане части поезда, кроме центральной, сами не дают наведения — их тултипов и так не будет.
     private void Refresh()
     {
         if (!hover.HasTarget || PointerOverUI.Check())

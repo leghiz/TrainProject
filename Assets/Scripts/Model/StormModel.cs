@@ -13,8 +13,7 @@ public class StormModel
     public event Action<int> NodeChanged;
 
     private float pendingDamage;
-
-    // startPosition — где буря стоит в начале (в клетках за локомотивом). Не задано — берётся startDistance из конфига.
+    
     public StormModel(StormConfig config, TrainModel train, float? startPosition = null)
     {
         Config = config;

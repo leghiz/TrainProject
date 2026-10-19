@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-// По какому ящику кликнули (над ним появляется кнопка «Разобрать»).
 public class CargoSelectionModel
 {
     public CargoBoxModel Box { get; private set; }

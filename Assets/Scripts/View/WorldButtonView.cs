@@ -2,8 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// Кнопка в мире (спрайт + текст): лежит в сцене, геймдиз оформляет её как хочет.
-// Точка самого объекта встаёт туда, куда её ставит код (например, над ящиком).
 public class WorldButtonView : MonoBehaviour
 {
     [Tooltip("Фон кнопки: по его размеру ловится клик")]
@@ -14,7 +12,6 @@ public class WorldButtonView : MonoBehaviour
     [SerializeField] private Color unavailableColor = new Color(0.55f, 0.55f, 0.55f);
 
     public event Action Clicked;
-    // Нажали мимо кнопки — обычно это значит «передумал».
     public event Action PressedOutside;
 
     private bool interactable;

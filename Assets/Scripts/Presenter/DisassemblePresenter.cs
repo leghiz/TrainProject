@@ -1,7 +1,5 @@
 using System;
 
-// Клик по ящику посылки → над ним кнопка «Разобрать» → посылка провалена,
-// а станок со случайным свойством появляется над локомотивом, как скрафченный.
 public class DisassemblePresenter : IDisposable
 {
     private readonly CargoSelectionModel selection;
@@ -33,7 +31,6 @@ public class DisassemblePresenter : IDisposable
             button.Hide();
             return;
         }
-        // Над локомотивом уже висит готовый станок — сначала его нужно забрать.
         button.ShowAt(selection.Anchor, "Разобрать", !workbench.HasReady);
     }
 
