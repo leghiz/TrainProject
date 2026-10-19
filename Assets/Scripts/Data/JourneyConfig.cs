@@ -23,6 +23,19 @@ public class JourneyConfig : ScriptableObject
 
     [Tooltip("0 — каждый раз новая карта, другое число — всегда одна и та же")]
     public int seed;
+
+    [Header("Доставка")]
+    [Tooltip("Через сколько узлов после взятия посылки стоит Грузовая-получатель")]
+    [Min(1)] public int deliveryDistance = 3;
+
+    [Tooltip("Станция-получатель (обычно та же Грузовая)")]
+    [Expandable] public StationConfig deliveryStation;
+
+    [Tooltip("Из каких станков выпадает случайный при разборке ящика")]
+    [Expandable] public MachineConfig[] disassemblyMachines;
+
+    [Tooltip("Из каких свойств выпадает случайное при разборке ящика")]
+    [Expandable] public MachineTrait[] disassemblyTraits;
 }
 
 [Serializable]

@@ -15,4 +15,3 @@ MonoBehaviour:
   displayName: "\u041F\u0440\u0438\u0437\u0440\u0430\u0447\u043D\u044B\u0439"
   resourceMultiplier: 0.25
   weightMultiplier: 0
-  tint: {r: 0.55, g: 1, b: 0.9, a: 0.6}

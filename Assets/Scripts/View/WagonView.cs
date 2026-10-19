@@ -12,6 +12,7 @@ public class WagonView : MonoBehaviour
 
     [Header("Станки")]
     [SerializeField] private MachineView machinePrefab;
+    [SerializeField] private CargoBoxView boxPrefab;
 
     [Tooltip("Размер одной клетки сетки в пикселях спрайта")]
     [SerializeField] private int cellSize = 16;
@@ -33,8 +34,6 @@ public class WagonView : MonoBehaviour
     private Vector2Int gridSize;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
-
-    public void SetTint(Color tint) => body.color = tint; 
     
     public float Width => body.sprite.bounds.size.x * body.transform.localScale.x;
     public float Height => body.sprite.bounds.size.y * body.transform.localScale.y;
@@ -72,6 +71,17 @@ public class WagonView : MonoBehaviour
     public void HidePlacementPreview() => placementPreview.gameObject.SetActive(false);
 
     public void RemoveMachine(MachineView machine) => Destroy(machine.gameObject);
+    
+    public CargoBoxView AddBox(Vector2Int cell, Vector2Int size, Sprite sprite)
+    {
+        var box = Instantiate(boxPrefab, transform);
+        box.transform.localPosition = AreaCenter(cell, size);
+        box.Setup(sprite, (Vector2)size * CellUnits);
+        if (fogged) foreach (var r in box.GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = false;
+        return box;
+    }
+
+    public void RemoveBox(CargoBoxView box) => Destroy(box.gameObject);
 
     private void Update()
     {

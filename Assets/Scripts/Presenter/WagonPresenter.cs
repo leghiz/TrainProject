@@ -9,6 +9,7 @@ public class WagonPresenter : IDisposable
     private readonly BuildModel build;
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
+    private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
 
     public WagonPresenter(WagonModel model, WagonView view, BuildModel build)
     {
@@ -17,15 +18,17 @@ public class WagonPresenter : IDisposable
         this.build = build;
 
         view.SetSprite(model.Config.sprite);
-        if (model.Condition != null) view.SetTint(model.Condition.tint);
         view.SetGridSize(model.Config.size);
         UpdateHp(model.Hp);
         foreach (var machine in model.Machines) ShowMachine(machine);
+        foreach (var box in model.Boxes) ShowBox(box);
 
         model.HpChanged += UpdateHp;
         model.Destroyed += OnDestroyed;
         model.MachinePlaced += ShowMachine;
         model.MachineRemoved += HideMachine;
+        model.BoxPlaced += ShowBox;
+        model.BoxRemoved += HideBox;
 
         view.CellHovered += UpdatePreview;
         view.HoverExited += view.HidePlacementPreview;
@@ -50,7 +53,18 @@ public class WagonPresenter : IDisposable
         machines.Remove(machine);
         if (view.HoveredCell.HasValue) UpdatePreview(view.HoveredCell.Value);
     }
-    
+
+    private void ShowBox(CargoBoxModel box) =>
+        boxes[box] = view.AddBox(box.Cell, box.Config.size, box.Config.sprite);
+
+    private void HideBox(CargoBoxModel box)
+    {
+        if (!boxes.TryGetValue(box, out var boxView)) return;
+        view.RemoveBox(boxView);
+        boxes.Remove(box);
+        if (view.HoveredCell.HasValue) UpdatePreview(view.HoveredCell.Value);
+    }
+
     private void UpdatePreview(Vector2Int cell)
     {
         var machine = build.Selected;
@@ -66,7 +80,7 @@ public class WagonPresenter : IDisposable
     {
         var machine = build.Selected;
         if (machine == null) return;
-        if (model.TryPlace(machine, cell)) UpdatePreview(cell);
+        if (model.TryPlace(machine, cell, build.SelectedTrait)) UpdatePreview(cell);
     }
 
     private void OnSelectedChanged(MachineConfig machine)
@@ -80,6 +94,8 @@ public class WagonPresenter : IDisposable
         model.Destroyed -= OnDestroyed;
         model.MachinePlaced -= ShowMachine;
         model.MachineRemoved -= HideMachine;
+        model.BoxPlaced -= ShowBox;
+        model.BoxRemoved -= HideBox;
 
         view.CellHovered -= UpdatePreview;
         view.HoverExited -= view.HidePlacementPreview;

@@ -29,3 +29,14 @@ MonoBehaviour:
     weight: 15
   finalStation: {fileID: 11400000, guid: cd569c669de956c45a2543bf809afa09, type: 2}
   seed: 0
+  deliveryDistance: 3
+  deliveryStation: {fileID: 11400000, guid: 5ac9da1efd6297a4f97d55e268a326ab, type: 2}
+  disassemblyMachines:
+  - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}
+  - {fileID: 11400000, guid: cc61c393a249e524cbe7d6033f15107d, type: 2}
+  - {fileID: 11400000, guid: 81e68f8d5bb078c47ac74ef38ee6a279, type: 2}
+  - {fileID: 11400000, guid: afe92667d469f8e4db1f6801ebca5c2e, type: 2}
+  disassemblyTraits:
+  - {fileID: 11400000, guid: 2fc1877bf0f901e459f9e8bddccf4d80, type: 2}
+  - {fileID: 11400000, guid: b14032ef04c6e09478a4a6626be9bc81, type: 2}
+  - {fileID: 11400000, guid: 8cebec1afad00a041bdd3fa156972f0a, type: 2}

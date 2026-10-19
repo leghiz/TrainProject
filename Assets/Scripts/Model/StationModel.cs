@@ -13,9 +13,24 @@ public class WagonOffer
     }
 }
 
+
+public class CargoOffer
+{
+    public CargoBoxConfig Box { get; }
+    public WagonConfig Wagon { get; }
+
+    public CargoOffer(CargoBoxConfig box, WagonConfig wagon)
+    {
+        Box = box;
+        Wagon = wagon;
+    }
+}
+
 public class StationModel
 {
     public StationConfig Config { get; }
+    
+    public CargoOffer Cargo { get; private set; }
 
     private readonly List<WagonOffer> offers = new List<WagonOffer>();
     public IReadOnlyList<WagonOffer> Offers => offers;
@@ -25,9 +40,10 @@ public class StationModel
 
     public event Action Changed;
 
-    public StationModel(StationConfig config, Random random)
+    public StationModel(StationConfig config, Random random, bool offerCargo = false)
     {
         Config = config;
+        if (offerCargo) Cargo = PickCargo(config, random);
         
         var pool = new List<WagonConfig>();
         if (config.wagons != null)
@@ -55,6 +71,27 @@ public class StationModel
         train.Attach(wagon);
         Changed?.Invoke();
         return wagon;
+    }
+    
+    public void TakeCargo()
+    {
+        Cargo = null;
+        Changed?.Invoke();
+    }
+    
+    private static CargoOffer PickCargo(StationConfig config, Random random)
+    {
+        if (config.cargoBoxes == null || config.cargoBoxes.Length == 0 || config.cargoWagons == null) return null;
+
+        var box = config.cargoBoxes[random.Next(config.cargoBoxes.Length)];
+        if (box == null) return null;
+
+        var fitting = new List<WagonConfig>();
+        foreach (var wagon in config.cargoWagons)
+            if (wagon != null && box.size.x <= wagon.size.x && box.size.y <= wagon.size.y) fitting.Add(wagon);
+        if (fitting.Count == 0) return null;
+
+        return new CargoOffer(box, fitting[random.Next(fitting.Count)]);
     }
 
     private WagonModel CreateWagon(WagonOffer offer) =>

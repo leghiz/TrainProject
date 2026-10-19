@@ -86,10 +86,10 @@ public class LocomotiveModel : IMachineHost
         !IsDestroyed && Welder == null && machine != null
         && machine.action == MachineAction.Repair && machine.size == Vector2Int.one;
 
-    public bool TryPlaceWelder(MachineConfig machine)
+    public bool TryPlaceWelder(MachineConfig machine, MachineTrait trait = null)
     {
         if (!CanPlaceWelder(machine)) return false;
-        Welder = new MachineModel(machine, Vector2Int.zero);
+        Welder = new MachineModel(machine, Vector2Int.zero, trait);
         MachinePlaced?.Invoke(Welder);
         return true;
     }

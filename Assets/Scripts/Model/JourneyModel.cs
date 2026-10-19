@@ -22,10 +22,11 @@ public class JourneyModel
 
     public JourneyState State { get; private set; } = JourneyState.Map;
     public int Node => Map.Current.Column;
-    public MapNode Target { get; private set; }          // куда едем сейчас
+    public MapNode Target { get; private set; }
     public StationModel CurrentStation { get; private set; }
     public float TimeLeft { get; private set; }
-    
+    public DeliveryModel Delivery { get; } = new DeliveryModel();
+
     private readonly List<TravelEventConfig> activeEvents = new List<TravelEventConfig>();
     public IReadOnlyList<TravelEventConfig> ActiveEvents => activeEvents;
 
@@ -64,6 +65,31 @@ public class JourneyModel
         return false;
     }
     
+    public bool AcceptCargo()
+    {
+        if (State != JourneyState.Station || Delivery.IsActive) return false;
+        var offer = CurrentStation?.Cargo;
+        if (offer == null) return false;
+
+        var wagon = new WagonModel(offer.Wagon);
+        Train.Attach(wagon);
+        var box = wagon.TryPlaceBox(offer.Box, Vector2Int.zero);
+        if (box == null) return false;
+
+        int destination = Node + Config.deliveryDistance;
+        foreach (var node in Map.ReachableAhead(Map.Current, Config.deliveryDistance))
+            node.SetStation(Config.deliveryStation);
+
+        CurrentStation.TakeCargo();
+        Delivery.Start(box, wagon, destination);
+        return true;
+    }
+    
+    public bool DisassembleCargo(out MachineConfig machine, out MachineTrait trait) =>
+        Delivery.Disassemble(Config.disassemblyMachines, Config.disassemblyTraits, random, out machine, out trait);
+    
+    private bool CanOfferCargo => !Delivery.IsActive && Node + Config.deliveryDistance < Config.nodeCount;
+
     public void LeaveStation()
     {
         if (State != JourneyState.Station) return;
@@ -95,6 +121,9 @@ public class JourneyModel
         activeEvents.Clear();
         NodeReached?.Invoke(Node);
 
+        if (!Delivery.TryDeliver(Map.Current, Config.deliveryStation, Storage))
+            Delivery.CheckMissed(Map.Current);
+
         var station = Map.Current.Station;
         if (station == null || station.isFinal || Node >= Config.nodeCount)
         {
@@ -103,7 +132,7 @@ public class JourneyModel
         }
 
         Storm.NextNode();
-        CurrentStation = new StationModel(station, random);
+        CurrentStation = new StationModel(station, random, CanOfferCargo);
         SetState(JourneyState.Station);
     }
     
@@ -128,7 +157,7 @@ public class JourneyModel
         pendingRainDamage -= damage;
 
         var wagons = new List<WagonModel>(Train.Wagons);
-        foreach (var wagon in wagons) wagon.DamageMachines(damage);
+        foreach (var wagon in wagons) wagon.TakeRain(damage);
     }
 
     private void OnLocomotiveDestroyed() => SetState(JourneyState.GameOver);

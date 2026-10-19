@@ -5,8 +5,10 @@ public class MapNode
 {
     public int Column { get; }
     public int Row { get; }
-    public StationConfig Station { get; }
+    public StationConfig Station { get; private set; }
     public List<MapNode> Next { get; } = new List<MapNode>();
+    
+    public void SetStation(StationConfig station) => Station = station;
     
     private readonly Dictionary<MapNode, List<TravelEventConfig>> events = new Dictionary<MapNode, List<TravelEventConfig>>();
 
@@ -43,6 +45,20 @@ public class MapModel
     }
 
     public bool CanMoveTo(MapNode node) => node != null && Current.Next.Contains(node);
+    
+    public List<MapNode> ReachableAhead(MapNode from, int distance)
+    {
+        var level = new List<MapNode> { from };
+        for (int step = 0; step < distance; step++)
+        {
+            var next = new List<MapNode>();
+            foreach (var node in level)
+                foreach (var n in node.Next)
+                    if (!next.Contains(n)) next.Add(n);
+            level = next;
+        }
+        return level;
+    }
 
     public bool MoveTo(MapNode node)
     {

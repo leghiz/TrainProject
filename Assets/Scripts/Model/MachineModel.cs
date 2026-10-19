@@ -17,7 +17,12 @@ public class MachineModel
     
     public float? IntervalOverride { get; set; }
     public int Capacity { get; set; }
-    private float Interval => IntervalOverride ?? Config.workInterval;
+    private float Interval => (IntervalOverride ?? Config.workInterval) / SpeedMultiplier;
+    
+    public MachineTrait Trait { get; }
+    private float SpeedMultiplier => Trait != null ? Trait.speedMultiplier : 1f;
+    private float CostMultiplier => Trait != null ? Trait.costMultiplier : 1f;
+    public bool IsRainproof => Trait != null && Trait.rainproof;
     public bool IsWorking { get; private set; } = true;   
 
     public event Action<bool> WorkingChanged;
@@ -40,10 +45,11 @@ public class MachineModel
 
     private float timer;
 
-    public MachineModel(MachineConfig config, Vector2Int cell)
+    public MachineModel(MachineConfig config, Vector2Int cell, MachineTrait trait = null)
     {
         Config = config;
         Cell = cell;
+        Trait = trait;
         ChargeLeft = config.charge;
         Hp = config.maxHp;
     }
@@ -97,7 +103,7 @@ public class MachineModel
         {
             case MachineAction.Extract:
                 if (!(host is WagonModel wagon)) return false;
-                int extracted = wagon.Extract(Config.resource, Config.amount, Config.wagonDamage);
+                int extracted = wagon.Extract(Config.resource, Config.amount, Config.wagonDamage * CostMultiplier);
                 if (extracted <= 0) return false;
                 storage.Add(Config.resource, extracted);
                 return true;
@@ -116,12 +122,12 @@ public class MachineModel
                 return true;
 
             case MachineAction.Convert:
-                if (!UseLoaded(Config.amount)) return false;
+                if (!UseLoaded(LoadedCost())) return false;
                 storage.Add(Config.outputResource, Config.outputAmount);
                 return true;
 
             case MachineAction.Fuel:
-                return UseLoaded(Config.amount);
+                return UseLoaded(LoadedCost());
 
             case MachineAction.None:
                 return true;
@@ -130,6 +136,8 @@ public class MachineModel
                 return false;
         }
     }
+    
+    private int LoadedCost() => Mathf.Max(1, Mathf.RoundToInt(Config.amount * CostMultiplier));
 
     private bool UseLoaded(int amount)
     {
