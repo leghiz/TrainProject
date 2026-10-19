@@ -16,3 +16,4 @@ MonoBehaviour:
   resourceMultiplier: 2
   weightMultiplier: 1
   material: {fileID: 2100000, guid: d18831e7ed7e1e941a811a0f4f9c19ab, type: 2}
+  nameMaterial: {fileID: 2100000, guid: 81ec47637941ec1419d0b015d487608e, type: 2}
