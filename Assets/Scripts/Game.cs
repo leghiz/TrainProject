@@ -21,6 +21,8 @@ public class Game : MonoBehaviour
     [SerializeField] private StormView stormView;
     [SerializeField] private HandView handView;
     [SerializeField] private TooltipView tooltipView;
+    [SerializeField] private TrainMotionView trainMotion;
+    [SerializeField] private WeatherView weatherView;
 
     [Header("Разборка (удержание ПКМ над станком или ящиком)")]
     [Tooltip("Сколько секунд держать ПКМ, чтобы разобрать")]
@@ -61,6 +63,8 @@ public class Game : MonoBehaviour
     private StationScreenPresenter stationScreenPresenter;
     private DisassemblePresenter disassemblePresenter;
     private DismantlePresenter dismantlePresenter;
+    private TrainMotionPresenter trainMotionPresenter;
+    private WeatherPresenter weatherPresenter;
 
     // Удержание ПКМ: IsActive, Progress (0..1) и событие Changed — для кружка прогресса.
     public DismantleModel Dismantle { get; private set; }
@@ -87,6 +91,8 @@ public class Game : MonoBehaviour
 
         journey = new JourneyModel(journeyConfig, train, storm, storage);
         journeyPresenter = new JourneyPresenter(journey, trainView);
+        trainMotionPresenter = new TrainMotionPresenter(journey, train, trainMotion);
+        weatherPresenter = new WeatherPresenter(journey, weatherView);
         tooltipPresenter = new TooltipPresenter(hover, tooltipView);
         mapScreenPresenter = new MapScreenPresenter(journey, mapScreen);
         stationScreenPresenter = new StationScreenPresenter(journey, stationScreen);
@@ -100,6 +106,7 @@ public class Game : MonoBehaviour
         
         if (journey.State == JourneyState.Travelling) workbench.Tick(Time.deltaTime);
         journey.Tick(Time.deltaTime);
+        trainMotionPresenter.Tick();
         Dismantle.Tick(Time.deltaTime);
         tooltipPresenter.Tick();
     }
@@ -124,6 +131,7 @@ public class Game : MonoBehaviour
     private void OnDestroy()
     {
         if (journey != null) journey.StateChanged -= OnStateChanged;
+        weatherPresenter?.Dispose();
         disassemblePresenter?.Dispose();
         dismantlePresenter?.Dispose();
         stationScreenPresenter?.Dispose();
