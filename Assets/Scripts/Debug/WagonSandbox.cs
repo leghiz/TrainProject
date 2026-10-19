@@ -14,9 +14,12 @@ public class WagonSandbox : MonoBehaviour
     [SerializeField, Expandable] private MachineTrait[] traits;
     [SerializeField] private WorkbenchPanelView workbenchPanel;
     [SerializeField] private HandView handView;
+    [SerializeField] private ResourcePanelView resourcePanel;
+    [SerializeField] private TooltipView tooltipView;
 
     private readonly BuildModel build = new BuildModel();
     private readonly ResourceStorageModel storage = new ResourceStorageModel();
+    private readonly HoverModel hover = new HoverModel();
 
     private LocomotiveModel locomotive;
     private TrainModel train;
@@ -28,6 +31,8 @@ public class WagonSandbox : MonoBehaviour
     private WorkbenchModel workbench;
     private WorkbenchPresenter workbenchPresenter;
     private HandPresenter handPresenter;
+    private ResourcePanelPresenter resourcePanelPresenter;
+    private TooltipPresenter tooltipPresenter;
     private float logTimer;
     private int traitIndex = -1; 
 
@@ -49,13 +54,15 @@ public class WagonSandbox : MonoBehaviour
         train.WagonAttached += w => Debug.Log($"[Поезд] прицеплен {w.Config.displayName}");
         train.WagonDetached += w => Debug.Log($"[Поезд] отцеплен {w.Config.displayName}");
 
-        trainPresenter = new TrainPresenter(train, trainView, build, storage);
+        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover);
         AttachRandomWagon();
 
         workbench = new WorkbenchModel(locomotiveConfig.recipes, storage);
         workbench.ReadyChanged += m => Debug.Log(m != null ? $"[Верстак] готов {m.displayName} — тащи иконку на вагон" : "[Верстак] слот свободен");
         workbenchPresenter = new WorkbenchPresenter(workbench, storage, build, trainView.Locomotive, workbenchPanel);
         handPresenter = new HandPresenter(build, handView);
+        resourcePanelPresenter = new ResourcePanelPresenter(storage, resourcePanel);
+        tooltipPresenter = new TooltipPresenter(hover, tooltipView);
 
         storm = new StormModel(stormConfig, train);
         storm.NodeChanged += node => Debug.Log($"[Буря] узел {node}, скорость {storm.Speed:0.00}");
@@ -76,6 +83,7 @@ public class WagonSandbox : MonoBehaviour
     private void Update()
     {
         journey.Tick(Time.deltaTime);
+        tooltipPresenter.Tick();
 
         logTimer -= Time.deltaTime;
         if (logTimer <= 0f && journey.State == JourneyState.Travelling) { logTimer = 2f; LogTrain(); }
@@ -125,6 +133,8 @@ public class WagonSandbox : MonoBehaviour
 
     private void OnDestroy()
     {
+        tooltipPresenter?.Dispose();
+        resourcePanelPresenter?.Dispose();
         handPresenter?.Dispose();
         workbenchPresenter?.Dispose();
         journeyPresenter?.Dispose();

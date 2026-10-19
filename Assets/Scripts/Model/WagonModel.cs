@@ -205,6 +205,8 @@ public class WagonModel : IMachineHost
     
     public MachineModel GetMachineAt(Vector2Int cell) => IsInside(cell) ? grid[cell.x, cell.y] : null;
 
+    public CargoBoxModel GetBoxAt(Vector2Int cell) => IsInside(cell) ? boxGrid[cell.x, cell.y] : null;
+
     private bool IsInside(Vector2Int c) =>
         c.x >= 0 && c.y >= 0 && c.x < Config.size.x && c.y < Config.size.y;
 }

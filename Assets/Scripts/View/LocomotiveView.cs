@@ -4,12 +4,20 @@ using UnityEngine.InputSystem;
 
 public enum LocomotiveSlot { Boiler, Workbench, Welder }
 
+public enum LocomotivePart { None, Body, Boiler, Workbench, Welder }
+
 public class LocomotiveView : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer body;
 
     [Tooltip("Точка у левого края полоски хп. Её масштаб по X = доля оставшегося хп")]
     [SerializeField] private Transform hpFill;
+
+    [Tooltip("Число хп рядом с полоской, например 150/200 (можно не заполнять)")]
+    [SerializeField] private TextMesh hpText;
+
+    [Tooltip("Где появляется тултип при наведении на Коптильню, Верстак, Сварочный")]
+    [SerializeField] private Transform tooltipPoint;
 
     [Header("Места станков (центры мест — двигать под спрайт локомотива)")]
     [SerializeField] private MachineView machinePrefab;
@@ -51,9 +59,11 @@ public class LocomotiveView : MonoBehaviour
     public event Action<int> PlateSlotHovered;
     public event Action PlateSlotExited;
     public event Action<int> PlateSlotReleased;
+    public event Action<LocomotivePart> PartHovered;
 
     public bool IsWelderSlotHovered { get; private set; }
     public int? HoveredPlateSlot { get; private set; }
+    public LocomotivePart HoveredPart { get; private set; }
     public int PlateSlotCount => plateSlots != null ? plateSlots.Length : 0;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
@@ -69,7 +79,13 @@ public class LocomotiveView : MonoBehaviour
         foreach (var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = !value;
     }
 
-    public void SetHp(float normalized) => hpFill.localScale = new Vector3(normalized, 1f, 1f);
+    public void SetHp(int hp, int maxHp)
+    {
+        hpFill.localScale = new Vector3(maxHp > 0 ? (float)hp / maxHp : 0f, 1f, 1f);
+        if (hpText != null) hpText.text = $"{hp}/{maxHp}";
+    }
+
+    public Vector3 TooltipPoint => tooltipPoint != null ? tooltipPoint.position : transform.position + Vector3.up * Height / 2f;
 
     public void ShowDestroyed() => gameObject.SetActive(false);
     
@@ -134,6 +150,13 @@ public class LocomotiveView : MonoBehaviour
         if (welderChanged && hovered) WelderSlotHovered?.Invoke();
         if (plateChanged && plateSlot.HasValue) PlateSlotHovered?.Invoke(plateSlot.Value);
 
+        var part = PartAt(world, hovered);
+        if (part != HoveredPart)
+        {
+            HoveredPart = part;
+            PartHovered?.Invoke(part);
+        }
+
         if (PointerOverUI.Check()) return;
 
         if (mouse.leftButton.wasReleasedThisFrame)
@@ -152,6 +175,17 @@ public class LocomotiveView : MonoBehaviour
     {
         Vector2 offset = world - (Vector2)slot.position;
         return Mathf.Abs(offset.x) <= cells.x * cellSize / 2f && Mathf.Abs(offset.y) <= cells.y * cellSize / 2f;
+    }
+
+    private LocomotivePart PartAt(Vector2 world, bool overWelder)
+    {
+        if (!gameObject.activeInHierarchy) return LocomotivePart.None;
+        if (overWelder) return LocomotivePart.Welder;
+        if (IsOver(world, workbenchSlot, workbenchCells)) return LocomotivePart.Workbench;
+        if (IsOver(world, boilerSlot, boilerCells)) return LocomotivePart.Boiler;
+        var bounds = body.bounds;
+        bool onBody = world.x >= bounds.min.x && world.x <= bounds.max.x && world.y >= bounds.min.y && world.y <= bounds.max.y;
+        return onBody ? LocomotivePart.Body : LocomotivePart.None;
     }
 
     private int? PlateSlotAt(Vector2 world)

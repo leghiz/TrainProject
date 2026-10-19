@@ -10,6 +10,12 @@ public class WagonView : MonoBehaviour
     [Tooltip("Точка у левого края полоски хп. Её масштаб по X = доля оставшегося хп")]
     [SerializeField] private Transform hpFill;
 
+    [Tooltip("Полоска хп целиком: видна, только пока мышь над вагоном")]
+    [SerializeField] private GameObject hpBar;
+
+    [Tooltip("Где появляется тултип: сдвиг от середины верхнего края вагона (вагоны разной высоты)")]
+    [SerializeField] private Vector2 tooltipOffset = new Vector2(0f, 4f);
+
     [Header("Станки")]
     [SerializeField] private MachineView machinePrefab;
     [SerializeField] private CargoBoxView boxPrefab;
@@ -34,6 +40,13 @@ public class WagonView : MonoBehaviour
     private Vector2Int gridSize;
 
     public void SetSprite(Sprite sprite) => body.sprite = sprite;
+
+    public Vector3 TooltipPoint => transform.position + Vector3.up * Height / 2f + (Vector3)tooltipOffset;
+
+    private void Awake()
+    {
+        if (hpBar != null) hpBar.SetActive(false);
+    }
     
     public float Width => body.sprite.bounds.size.x * body.transform.localScale.x;
     public float Height => body.sprite.bounds.size.y * body.transform.localScale.y;
@@ -96,6 +109,7 @@ public class WagonView : MonoBehaviour
         if (cell != HoveredCell)
         {
             HoveredCell = cell;
+            if (hpBar != null) hpBar.SetActive(cell.HasValue);
             if (cell.HasValue) CellHovered?.Invoke(cell.Value);
             else HoverExited?.Invoke();
         }
