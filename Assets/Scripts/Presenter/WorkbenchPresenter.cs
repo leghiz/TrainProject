@@ -121,8 +121,8 @@ public class WorkbenchPresenter : IDisposable
     private void OnReadyIconPressed()
     {
         if (build.Selected != null || !model.HasReady) return;
-        var machine = model.Take();
-        build.Select(machine);
+        var machine = model.Take(out var trait);
+        build.Select(machine, trait);
         taken = machine;
     }
 
@@ -130,7 +130,7 @@ public class WorkbenchPresenter : IDisposable
     {
         if (taken == null || machine != taken) return;
         taken = null;
-        model.PutBack(machine);
+        model.PutBack(machine, trait);
     }
 
     private void OnSelectedChanged(MachineConfig machine)

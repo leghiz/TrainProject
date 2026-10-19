@@ -40,7 +40,7 @@ public static class TooltipTexts
         Title = box.Config.displayName,
         Hp = box.Hp,
         MaxHp = box.Config.maxHp,
-        Info = $"награда {box.Config.rewardIngots} слитков"
+        Info = $"награда {box.Config.rewardIngots} слитков\nклик — разобрать на станок"
     };
     
     public static TooltipContent Machine(MachineModel machine, bool showHp = true)

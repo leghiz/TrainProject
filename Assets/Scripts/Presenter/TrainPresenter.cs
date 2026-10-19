@@ -7,18 +7,21 @@ public class TrainPresenter : IDisposable
     private readonly BuildModel build;
     private readonly ResourceStorageModel storage;
     private readonly HoverModel hover;
+    private readonly CargoSelectionModel cargoSelection;
     private readonly LocomotivePresenter locomotivePresenter;
 
     private readonly Dictionary<WagonModel, (WagonPresenter presenter, WagonView view)> wagons =
         new Dictionary<WagonModel, (WagonPresenter presenter, WagonView view)>();
 
-    public TrainPresenter(TrainModel model, TrainView view, BuildModel build, ResourceStorageModel storage, HoverModel hover)
+    public TrainPresenter(TrainModel model, TrainView view, BuildModel build, ResourceStorageModel storage,
+                          HoverModel hover, CargoSelectionModel cargoSelection)
     {
         this.model = model;
         this.view = view;
         this.build = build;
         this.storage = storage;
         this.hover = hover;
+        this.cargoSelection = cargoSelection;
 
         locomotivePresenter = new LocomotivePresenter(model.Locomotive, view.Locomotive, build, storage, hover);
         foreach (var wagon in model.Wagons) ShowWagon(wagon);
@@ -31,7 +34,7 @@ public class TrainPresenter : IDisposable
     private void ShowWagon(WagonModel wagon)
     {
         var wagonView = view.AddWagon();
-        wagons[wagon] = (new WagonPresenter(wagon, wagonView, build, storage, hover), wagonView);
+        wagons[wagon] = (new WagonPresenter(wagon, wagonView, build, storage, hover, cargoSelection), wagonView);
     }
 
     private void OnWagonAttached(WagonModel wagon)

@@ -11,7 +11,6 @@ public class StationScreenPresenter : IDisposable
         this.journey = journey;
         this.view = view;
 
-        view.TakeCargoClicked += OnTakeCargo;
         view.LeaveClicked += journey.LeaveStation;
         journey.StateChanged += OnStateChanged;
         OnStateChanged(journey.State);
@@ -52,18 +51,27 @@ public class StationScreenPresenter : IDisposable
             card.Clicked += () => station.Pick(index, journey.Train);
         }
 
-        var cargo = station.Cargo;
-        if (cargo != null && !journey.Delivery.IsActive)
-            view.ShowCargo($"{cargo.Box.displayName} в вагоне {cargo.Wagon.displayName}\n" +
-                           $"довезти до узла {journey.Node + journey.Config.deliveryDistance}, награда {cargo.Box.rewardIngots} слитков");
-        else view.HideCargo();
+        // Посылки: из нескольких ящиков берётся один, ящик едет вместе со своим вагончиком.
+        var cargo = station.CargoOffers;
+        bool showCargo = cargo.Count > 0 && !journey.Delivery.IsActive;
+        view.SetCargoVisible(showCargo);
+        if (!showCargo) return;
+        int destination = journey.Node + journey.Config.deliveryDistance;
+        for (int i = 0; i < cargo.Count; i++)
+        {
+            var box = cargo[i].Box;
+            var card = view.AddCargoCard(i, cargo.Count);
+            card.Setup(box.sprite, box.displayName,
+                $"{box.size.x}×{box.size.y}, вес {box.weight:0.#}\nв вагоне {cargo[i].Wagon.displayName}\n" +
+                $"до узла {destination}: {box.rewardIngots} слитков");
+            int index = i;
+            card.Clicked += () => journey.AcceptCargo(index);
+        }
     }
-    private void OnTakeCargo() => journey.AcceptCargo();
 
     public void Dispose()
     {
         if (station != null) station.Changed -= Refresh;
-        view.TakeCargoClicked -= OnTakeCargo;
         view.LeaveClicked -= journey.LeaveStation;
         journey.StateChanged -= OnStateChanged;
     }

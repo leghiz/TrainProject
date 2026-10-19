@@ -33,6 +33,9 @@ public class StationConfig : ScriptableObject
     [Tooltip("Какие ящики предлагают отвезти. Пусто — станция посылок не даёт")]
     [Expandable] public CargoBoxConfig[] cargoBoxes;
 
+    [Tooltip("Из скольких разных ящиков игрок выбирает один (по документу — из двух)")]
+    [Min(1)] public int cargoChoiceCount = 2;
+
     [Tooltip("Какой вагончик дают вместе с посылкой (3×1 или 2×2). Выбирается тот, куда ящик влезает")]
     [Expandable] public WagonConfig[] cargoWagons;
 

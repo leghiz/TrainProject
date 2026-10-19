@@ -18,10 +18,12 @@ public class WagonSandbox : MonoBehaviour
     [SerializeField] private TooltipView tooltipView;
     [SerializeField] private MapScreenView mapScreen;
     [SerializeField] private StationScreenView stationScreen;
+    [SerializeField] private WorldButtonView disassembleButton;
 
     private readonly BuildModel build = new BuildModel();
     private readonly ResourceStorageModel storage = new ResourceStorageModel();
     private readonly HoverModel hover = new HoverModel();
+    private readonly CargoSelectionModel cargoSelection = new CargoSelectionModel();
 
     private LocomotiveModel locomotive;
     private TrainModel train;
@@ -38,6 +40,7 @@ public class WagonSandbox : MonoBehaviour
     private MapScreenPresenter mapScreenPresenter;
     private StationScreenPresenter stationScreenPresenter;
     private BoilerUpgradePresenter boilerUpgradePresenter;
+    private DisassemblePresenter disassemblePresenter;
     private float logTimer;
     private int traitIndex = -1; 
 
@@ -59,7 +62,7 @@ public class WagonSandbox : MonoBehaviour
         train.WagonAttached += w => Debug.Log($"[Поезд] прицеплен {w.Config.displayName}");
         train.WagonDetached += w => Debug.Log($"[Поезд] отцеплен {w.Config.displayName}");
 
-        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover);
+        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover, cargoSelection);
         AttachRandomWagon();
 
         workbench = new WorkbenchModel(locomotiveConfig.recipes, storage);
@@ -79,11 +82,12 @@ public class WagonSandbox : MonoBehaviour
         journeyPresenter = new JourneyPresenter(journey, trainView);
         mapScreenPresenter = new MapScreenPresenter(journey, mapScreen);
         stationScreenPresenter = new StationScreenPresenter(journey, stationScreen);
+        disassemblePresenter = new DisassemblePresenter(cargoSelection, journey, workbench, disassembleButton);
         journey.NodeReached += node => Debug.Log($"[Забег] доехали до узла {node} из {journeyConfig.nodeCount}: {NodeName(journey.Map.Current)}");
-        journey.Delivery.Started += () => Debug.Log($"[Посылка] взяли {journey.Delivery.Box.Config.displayName}, везём до Грузовой на узле {journey.Delivery.DestinationColumn}. B — разобрать ящик");
+        journey.Delivery.Started += () => Debug.Log($"[Посылка] взяли {journey.Delivery.Box.Config.displayName}, везём до Грузовой на узле {journey.Delivery.DestinationColumn}. Клик по ящику — разобрать");
         journey.Delivery.Delivered += ingots => Debug.Log($"[Посылка] доставлена! +{ingots} слитков");
         journey.Delivery.Failed += reason => Debug.Log($"[Посылка] провалена: {reason}");
-        journey.Delivery.Disassembled += (machine, trait) => Debug.Log($"[Посылка] ящик разобран: в руке {machine.displayName} ({(trait != null ? trait.displayName : "без свойства")})");
+        journey.Delivery.Disassembled += (machine, trait) => Debug.Log($"[Посылка] ящик разобран: над локомотивом {machine.displayName} ({(trait != null ? trait.displayName : "без свойства")})");
         LogMap();
         LogChoices();
     }
@@ -108,11 +112,6 @@ public class WagonSandbox : MonoBehaviour
             if (build.Selected != null) build.Select(build.Selected, CurrentTrait);
             Debug.Log($"[Свойство] следующий станок: {TraitName}");
         }
-        if (kb.bKey.wasPressedThisFrame)
-        {
-            if (journey.DisassembleCargo(out var machine, out var trait)) build.Select(machine, trait);
-            else Debug.Log("[Посылка] разбирать нечего");
-        }
 
         for (int i = 0; i < machines.Length && i < 9; i++)
         {
@@ -133,6 +132,7 @@ public class WagonSandbox : MonoBehaviour
     {
         stationScreenPresenter?.Dispose();
         boilerUpgradePresenter?.Dispose();
+        disassemblePresenter?.Dispose();
         mapScreenPresenter?.Dispose();
         tooltipPresenter?.Dispose();
         resourcePanelPresenter?.Dispose();
@@ -198,9 +198,8 @@ public class WagonSandbox : MonoBehaviour
             string condition = offer.Condition != null ? offer.Condition.displayName : "Обычный";
             sb.Append($"  {i + 1}. {offer.Config.displayName} ({condition}, дерево {preview.Wood}, лом {preview.Scrap}, вес {preview.Weight:0.#})");
         }
-        if (station.Cargo != null)
-            sb.Append($"   | посылка: {station.Cargo.Box.displayName} в {station.Cargo.Wagon.displayName}, " +
-                      $"отвезти до узла {journey.Node + journeyConfig.deliveryDistance}, награда {station.Cargo.Box.rewardIngots} слитков");
+        foreach (var cargo in station.CargoOffers)
+            sb.Append($"   | посылка: {cargo.Box.displayName} в {cargo.Wagon.displayName}, награда {cargo.Box.rewardIngots} слитков");
         Debug.Log(sb.ToString());
     }
 

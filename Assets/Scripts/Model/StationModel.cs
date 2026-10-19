@@ -30,7 +30,9 @@ public class StationModel
 {
     public StationConfig Config { get; }
     
-    public CargoOffer Cargo { get; private set; }
+    // Посылки на выбор: взять можно только одну.
+    private readonly List<CargoOffer> cargoOffers = new List<CargoOffer>();
+    public IReadOnlyList<CargoOffer> CargoOffers => cargoOffers;
 
     private readonly List<WagonOffer> offers = new List<WagonOffer>();
     public IReadOnlyList<WagonOffer> Offers => offers;
@@ -43,7 +45,7 @@ public class StationModel
     public StationModel(StationConfig config, Random random, bool offerCargo = false)
     {
         Config = config;
-        if (offerCargo) Cargo = PickCargo(config, random);
+        if (offerCargo) PickCargo(config, random);
         
         var pool = new List<WagonConfig>();
         if (config.wagons != null)
@@ -75,23 +77,29 @@ public class StationModel
     
     public void TakeCargo()
     {
-        Cargo = null;
+        cargoOffers.Clear();
         Changed?.Invoke();
     }
-    
-    private static CargoOffer PickCargo(StationConfig config, Random random)
+
+    // Несколько разных случайных ящиков из пула станции; к каждому — вагончик, куда он влезает.
+    private void PickCargo(StationConfig config, Random random)
     {
-        if (config.cargoBoxes == null || config.cargoBoxes.Length == 0 || config.cargoWagons == null) return null;
+        if (config.cargoBoxes == null || config.cargoWagons == null) return;
 
-        var box = config.cargoBoxes[random.Next(config.cargoBoxes.Length)];
-        if (box == null) return null;
+        var pool = new List<CargoBoxConfig>();
+        foreach (var box in config.cargoBoxes) if (box != null && !pool.Contains(box)) pool.Add(box);
 
-        var fitting = new List<WagonConfig>();
-        foreach (var wagon in config.cargoWagons)
-            if (wagon != null && box.size.x <= wagon.size.x && box.size.y <= wagon.size.y) fitting.Add(wagon);
-        if (fitting.Count == 0) return null;
+        while (cargoOffers.Count < config.cargoChoiceCount && pool.Count > 0)
+        {
+            int index = random.Next(pool.Count);
+            var box = pool[index];
+            pool.RemoveAt(index);
 
-        return new CargoOffer(box, fitting[random.Next(fitting.Count)]);
+            var fitting = new List<WagonConfig>();
+            foreach (var wagon in config.cargoWagons)
+                if (wagon != null && box.size.x <= wagon.size.x && box.size.y <= wagon.size.y) fitting.Add(wagon);
+            if (fitting.Count > 0) cargoOffers.Add(new CargoOffer(box, fitting[random.Next(fitting.Count)]));
+        }
     }
 
     private WagonModel CreateWagon(WagonOffer offer) =>
