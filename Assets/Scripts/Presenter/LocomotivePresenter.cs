@@ -9,13 +9,16 @@ public class LocomotivePresenter : IDisposable
     private readonly BuildModel build;
     private readonly ResourceStorageModel storage;
     private readonly HoverModel hover;
+    private readonly DismantleModel dismantle;
 
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<PlateModel, MachineView> plates = new Dictionary<PlateModel, MachineView>();
 
-    public LocomotivePresenter(LocomotiveModel model, LocomotiveView view, BuildModel build, ResourceStorageModel storage, HoverModel hover)
+    public LocomotivePresenter(LocomotiveModel model, LocomotiveView view, BuildModel build, ResourceStorageModel storage, HoverModel hover,
+                               DismantleModel dismantle)
     {
+        this.dismantle = dismantle;
         this.model = model;
         this.view = view;
         this.build = build;
@@ -47,8 +50,20 @@ public class LocomotivePresenter : IDisposable
         view.PlateSlotReleased += OnPlateSlotReleased;
         view.BoilerClicked += OnBoilerClicked;
         view.PartHovered += OnPartHovered;
+        view.PartHovered += CancelDismantle;
+        view.PartRightPressed += OnPartRightPressed;
         build.SelectedChanged += OnSelectedChanged;
     }
+
+    // Удержание ПКМ над Сварочным с пустой рукой — разборка. Коптильня и Верстак встроены, их не разобрать.
+    private void OnPartRightPressed(LocomotivePart part)
+    {
+        if (build.Selected != null || part != LocomotivePart.Welder || model.Welder == null) return;
+        dismantle.Begin(this, () => model.DismantleWelder(storage));
+    }
+
+    // Мышь ушла на другую часть локомотива — удержание сбрасывается.
+    private void CancelDismantle(LocomotivePart part) => dismantle.Cancel(this);
 
     private void OnPartHovered(LocomotivePart part)
     {
@@ -179,7 +194,10 @@ public class LocomotivePresenter : IDisposable
         view.PlateSlotReleased -= OnPlateSlotReleased;
         view.BoilerClicked -= OnBoilerClicked;
         view.PartHovered -= OnPartHovered;
+        view.PartHovered -= CancelDismantle;
+        view.PartRightPressed -= OnPartRightPressed;
         build.SelectedChanged -= OnSelectedChanged;
+        dismantle.Cancel(this);
         hover.Clear(this);
 
         foreach (var entry in machines.Values) entry.presenter.Dispose();

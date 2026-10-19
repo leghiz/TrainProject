@@ -40,7 +40,7 @@ public static class TooltipTexts
         Title = box.Config.displayName,
         Hp = box.Hp,
         MaxHp = box.Config.maxHp,
-        Info = $"награда {box.Config.rewardIngots} слитков\nклик — разобрать на станок"
+        Info = $"награда {box.Config.rewardIngots} слитков\nдержи ПКМ — разобрать на станок"
     };
     
     public static TooltipContent Machine(MachineModel machine, bool showHp = true)
@@ -59,6 +59,7 @@ public static class TooltipTexts
         }
         if (machine.NeedsLoading) info += "\nклик — загрузить";
         if (!machine.IsWorking && config.action != MachineAction.None) info += "\nпростаивает";
+        info += "\nдержи ПКМ — разобрать (вернёт половину)";
 
         return new TooltipContent
         {
