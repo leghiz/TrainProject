@@ -160,7 +160,7 @@ public class WagonView : MonoBehaviour
 
         Vector3 world = cam.ScreenToWorldPoint(mouse.position.ReadValue());
         Vector2 local = transform.InverseTransformPoint(world);
-        Vector2Int? cell = fogged ? null : LocalToCell(local);
+        Vector2Int? cell = fogged || PointerOverUI.Check() ? null : LocalToCell(local);
 
         if (cell != HoveredCell)
         {

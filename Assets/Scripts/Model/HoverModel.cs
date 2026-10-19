@@ -10,7 +10,9 @@ public struct TooltipContent
 
     public bool IsWagon;
     public string Condition;
-    public string ConditionInfo;
+    public int Cells;
+    public string Effects;
+    public Material ConditionMaterial;
     public int Wood;
     public int Scrap;
 
@@ -23,6 +25,7 @@ public struct TooltipContent
     public float Progress;
     public string TraitName;
     public string TraitInfo;
+    public Material TraitMaterial;
 
     public bool HasHp => MaxHp > 0;
 }

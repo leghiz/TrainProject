@@ -16,4 +16,7 @@ public class MachineTrait : ScriptableObject
 
     [Tooltip("Материал с шейдером свойства (прыжки, синий отлив, блики). Пусто — обычный спрайт")]
     public Material material;
+
+    [Tooltip("Материал названия в тултипе: цвет и переливание. Пусто — обычный текст")]
+    public Material nameMaterial;
 }

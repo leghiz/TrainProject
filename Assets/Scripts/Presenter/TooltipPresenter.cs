@@ -20,7 +20,7 @@ public class TooltipPresenter : IDisposable
     // В тумане части поезда, кроме центральной, сами не дают наведения — их тултипов и так не будет.
     private void Refresh()
     {
-        if (!hover.HasTarget || PointerOverUI.Check())
+        if (!hover.HasTarget || PointerOverUI.OverCanvas())
         {
             view.Hide();
             return;

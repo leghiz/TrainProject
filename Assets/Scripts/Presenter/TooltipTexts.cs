@@ -11,7 +11,9 @@ public static class TooltipTexts
         IsWagon = true,
         Size = wagon.Config.sprite != null ? (Vector2)wagon.Config.sprite.bounds.size : Vector2.zero,
         Condition = wagon.Condition != null ? wagon.Condition.displayName : "Standard",
-        ConditionInfo = wagon.Condition != null ? ConditionInfo(wagon.Condition) : null,
+        Cells = wagon.Config.size.x * wagon.Config.size.y,
+        Effects = ConditionEffects(wagon.Condition),
+        ConditionMaterial = wagon.Condition != null ? wagon.Condition.nameMaterial : null,
         Wood = wagon.Wood,
         Scrap = wagon.Scrap
     };
@@ -19,39 +21,15 @@ public static class TooltipTexts
     private static string Multiplier(string name, float value) =>
         name + " x" + value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 
-    private static string ConditionInfo(WagonCondition condition)
+    // Что даёт состояние вагона, по строке: сначала вес, потом ресурсы. У обычного — пусто.
+    private static string ConditionEffects(WagonCondition condition)
     {
+        if (condition == null) return "";
         var lines = new System.Collections.Generic.List<string>();
+        if (Mathf.Approximately(condition.weightMultiplier, 0f)) lines.Add("Weight 0");
+        else if (!Mathf.Approximately(condition.weightMultiplier, 1f)) lines.Add(Multiplier("Weight", condition.weightMultiplier));
         if (!Mathf.Approximately(condition.resourceMultiplier, 1f)) lines.Add(Multiplier("Resources", condition.resourceMultiplier));
-        if (!Mathf.Approximately(condition.weightMultiplier, 1f)) lines.Add(Multiplier("Weight", condition.weightMultiplier));
         return string.Join("\n", lines);
-    }
-
-    public static TooltipContent Workbench(WorkbenchModel workbench)
-    {
-        string info;
-        if (workbench.IsCrafting)
-            info = $"делает: {workbench.InProgress.displayName}\nосталось {Mathf.CeilToInt(workbench.TimeLeft)} с (только в пути)";
-        else if (workbench.HasReady) info = $"готов: {workbench.Ready.displayName}\nтащи его на вагон";
-        else info = "клик — меню крафта";
-        return new TooltipContent { Title = "Верстак", Info = info };
-    }
-
-    public static TooltipContent Boiler(LocomotiveModel locomotive)
-    {
-        var boiler = locomotive.Boiler;
-        return new TooltipContent
-        {
-            Title = boiler.Config.displayName,
-            Info = $"уровень {locomotive.BoilerLevel}\nдерево {boiler.Loaded}/{boiler.Capacity}\nклик — загрузить" + UpgradeInfo(locomotive)
-        };
-    }
-
-    private static string UpgradeInfo(LocomotiveModel locomotive)
-    {
-        if (!locomotive.CanUpgradeBoiler) return "\nмаксимальный уровень";
-        var next = locomotive.NextLevel;
-        return $"\nур. {locomotive.BoilerLevel + 1} за {locomotive.UpgradeCost} слитков:\nбак {next.tank}, скорость {next.speed:0.##}, тяга {next.traction}";
     }
 
     public static TooltipContent Box(CargoBoxModel box) => new TooltipContent
@@ -59,7 +37,15 @@ public static class TooltipTexts
         Title = box.Config.displayName,
         Hp = box.Hp,
         MaxHp = box.Config.maxHp,
-        Info = $"награда {box.Config.rewardIngots} слитков\nдержи ПКМ — разобрать на станок"
+        Info = $"reward: {box.Config.rewardIngots} ingots"
+    };
+
+    // Посылка на станции: какой ящик, куда везти и сколько дадут.
+    public static TooltipContent CargoOffer(CargoBoxConfig box, int stops) => new TooltipContent
+    {
+        Title = box.displayName,
+        Info = $"deliver in {stops} stops\nreward: {box.rewardIngots} ingots\nweight: " +
+               box.weight.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)
     };
     
     public static TooltipContent Machine(MachineModel machine, bool showHp = true)
@@ -108,6 +94,7 @@ public static class TooltipTexts
         content.Progress = Mathf.Clamp01(progress);
         content.TraitName = trait != null ? trait.displayName : null;
         content.TraitInfo = trait != null ? TraitInfo(trait) : null;
+        content.TraitMaterial = trait != null ? trait.nameMaterial : null;
     }
 
     private static string TraitInfo(MachineTrait trait)

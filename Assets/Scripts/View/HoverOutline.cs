@@ -12,6 +12,9 @@ public class HoverOutline : MonoBehaviour
 
     public static bool Suppressed { get; set; }
 
+    // Обводка горит и без наведения (например, пока открыто меню этой штуки).
+    public bool Pinned { get; set; }
+
     private SpriteRenderer ring;
     private float alpha;
 
@@ -38,7 +41,7 @@ public class HoverOutline : MonoBehaviour
         if (ring == null) return;
 
         bool visible = target.enabled && target.gameObject.activeInHierarchy && target.sprite != null;
-        bool hovered = visible && !Suppressed && IsMouseOver() && !PointerOverUI.Check();
+        bool hovered = visible && (Pinned || (!Suppressed && IsMouseOver() && !PointerOverUI.Check(this)));
         float step = fadeTime > 0f ? Time.unscaledDeltaTime / fadeTime : 1f;
         alpha = Mathf.MoveTowards(alpha, hovered ? 1f : 0f, step);
 
