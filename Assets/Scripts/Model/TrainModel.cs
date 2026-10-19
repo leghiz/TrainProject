@@ -9,6 +9,7 @@ public class TrainModel
 
     private readonly List<WagonModel> wagons = new List<WagonModel>();
     public IReadOnlyList<WagonModel> Wagons => wagons;
+    public int IndexOf(WagonModel wagon) => wagons.IndexOf(wagon);
 
     public event Action<WagonModel> WagonAttached;
     public event Action<WagonModel> WagonDetached;
@@ -20,11 +21,14 @@ public class TrainModel
         Locomotive = locomotive;
     }
 
-    public void Attach(WagonModel wagon)
+    public void Attach(WagonModel wagon) => Insert(wagon, wagons.Count);
+
+    // Прицепить вагон в нужное место состава: 0 — сразу за локомотивом, Count — в хвост.
+    public void Insert(WagonModel wagon, int index)
     {
         if (wagon == null || wagon.IsDestroyed || wagons.Contains(wagon)) return;
 
-        wagons.Add(wagon);
+        wagons.Insert(Mathf.Clamp(index, 0, wagons.Count), wagon);
         Action handler = () => DetachFrom(wagon);
         destroyedHandlers[wagon] = handler;
         wagon.Destroyed += handler;

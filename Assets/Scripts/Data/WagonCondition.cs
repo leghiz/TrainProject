@@ -13,4 +13,7 @@ public class WagonCondition : ScriptableObject
 
     [Tooltip("Материал с шейдером состояния (ржавчина, блик, призрак). Пусто — обычный спрайт")]
     public Material material;
+
+    [Tooltip("Материал названия в тултипе: цвет и переливание. Пусто — обычный текст")]
+    public Material nameMaterial;
 }

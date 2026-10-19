@@ -41,6 +41,7 @@ public class WorkbenchPresenter : IDisposable
         storage.Changed += RefreshRows;
         panel.CloseClicked += HidePanel;
         locomotiveView.WorkbenchClicked += OnWorkbenchClicked;
+        locomotiveView.BoilerClicked += HidePanel;
         locomotiveView.ReadyIconPressed += OnReadyIconPressed;
         build.SelectedChanged += OnSelectedChanged;
         build.Cancelled += OnCancelled;
@@ -92,6 +93,9 @@ public class WorkbenchPresenter : IDisposable
             RefreshRows();
             panel.Show();
             UpdateReady(model.Ready);
+            UpdateProgress();
+            locomotiveView.HideHp(this, true);
+            locomotiveView.HighlightWorkbench(true);
         }
     }
 
@@ -100,6 +104,9 @@ public class WorkbenchPresenter : IDisposable
     {
         panel.Hide();
         UpdateReady(model.Ready);
+        UpdateProgress();
+        locomotiveView.HideHp(this, false);
+        locomotiveView.HighlightWorkbench(false);
     }
 
     private void OnCraftClicked(MachineConfig recipe)
@@ -121,14 +128,17 @@ public class WorkbenchPresenter : IDisposable
 
     private void OnProgressChanged()
     {
-        locomotiveView.SetCraftProgress(model.IsCrafting ? model.Progress : (float?)null);
+        UpdateProgress();
         RefreshRows();
     }
+
+    // Пока меню открыто, полоску крафта над верстаком не показываем — она легла бы на меню.
+    private void UpdateProgress() =>
+        locomotiveView.SetCraftProgress(model.IsCrafting && !panel.IsOpen ? model.Progress : (float?)null);
     
     private void OnPartHovered(LocomotivePart part)
     {
-        if (part == LocomotivePart.Workbench) hover.Show(this, () => TooltipTexts.Workbench(model), locomotiveView.TooltipPoint);
-        else if (part == LocomotivePart.Ready && model.HasReady)
+        if (part == LocomotivePart.Ready && model.HasReady)
             hover.Show(this, () => TooltipTexts.ReadyMachine(model.Ready, model.ReadyTrait), locomotiveView.ReadyIconCenter);
         else hover.Clear(this);
     }
@@ -140,7 +150,7 @@ public class WorkbenchPresenter : IDisposable
 
     private void OnReadyIconPressed()
     {
-        if (build.Selected != null || !model.HasReady) return;
+        if (!build.IsEmpty || !model.HasReady) return;
         var machine = model.Take(out var trait);
         build.Select(machine, trait);
         taken = machine;
@@ -167,6 +177,7 @@ public class WorkbenchPresenter : IDisposable
         storage.Changed -= RefreshRows;
         panel.CloseClicked -= HidePanel;
         locomotiveView.WorkbenchClicked -= OnWorkbenchClicked;
+        locomotiveView.BoilerClicked -= HidePanel;
         locomotiveView.ReadyIconPressed -= OnReadyIconPressed;
         build.SelectedChanged -= OnSelectedChanged;
         build.Cancelled -= OnCancelled;

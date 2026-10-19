@@ -17,3 +17,4 @@ MonoBehaviour:
   costMultiplier: 0.5
   rainproof: 0
   material: {fileID: 2100000, guid: 24f6868051b452d418675c045c84a150, type: 2}
+  nameMaterial: {fileID: 2100000, guid: c9d142bf1a2ec164e919b7ae2a2bcdef, type: 2}

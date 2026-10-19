@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8607d066d03ee34aa787554a27a573e, type: 3}
   m_Name: IronBox2x2
   m_EditorClassIdentifier: Assembly-CSharp::CargoBoxConfig
-  displayName: "\u0416\u0435\u043B\u0435\u0437\u043D\u044B\u0439 \u044F\u0449\u0438\u043A
-    2\xD72"
+  displayName: Iron Box
   sprite: {fileID: 0}
   size: {x: 2, y: 2}
   material: 1

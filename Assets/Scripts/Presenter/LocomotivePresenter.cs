@@ -48,7 +48,6 @@ public class LocomotivePresenter : IDisposable
         view.PlateSlotHovered += UpdatePlatePreview;
         view.PlateSlotExited += view.HidePlacementPreview;
         view.PlateSlotReleased += OnPlateSlotReleased;
-        view.BoilerClicked += OnBoilerClicked;
         view.PartHovered += OnPartHovered;
         view.PartHovered += CancelDismantle;
         view.PartRightPressed += OnPartRightPressed;
@@ -58,7 +57,7 @@ public class LocomotivePresenter : IDisposable
     // Удержание ПКМ над Сварочным с пустой рукой — разборка. Коптильня и Верстак встроены, их не разобрать.
     private void OnPartRightPressed(LocomotivePart part)
     {
-        if (build.Selected != null || part != LocomotivePart.Welder || model.Welder == null) return;
+        if (!build.IsEmpty || part != LocomotivePart.Welder || model.Welder == null) return;
         dismantle.Begin(this, () => model.DismantleWelder(storage));
     }
 
@@ -70,8 +69,6 @@ public class LocomotivePresenter : IDisposable
         Vector3 anchor = view.TooltipPoint;
         switch (part)
         {
-            case LocomotivePart.Boiler when model.Boiler != null:
-                hover.Show(this, () => TooltipTexts.Boiler(model), anchor); break;
             case LocomotivePart.Welder when model.Welder != null:
                 var welder = model.Welder;
                 hover.Show(this, () => TooltipTexts.Machine(welder, false), anchor); break;
@@ -122,12 +119,6 @@ public class LocomotivePresenter : IDisposable
         if (machine == null) return;
         if (model.TryPlacePlate(machine, slot)) build.Select(null);
     }
-    
-    private void OnBoilerClicked()
-    {
-        if (build.Selected != null || model.Boiler == null) return;
-        model.Boiler.Load(storage, int.MaxValue);
-    }
 
     private void OnDestroyed()
     {
@@ -172,6 +163,7 @@ public class LocomotivePresenter : IDisposable
 
     private void OnSelectedChanged(MachineConfig machine)
     {
+        view.ShowWelderCell(machine != null && model.CanPlaceWelder(machine));
         if (view.IsWelderSlotHovered) UpdatePreview();
         if (view.HoveredPlateSlot.HasValue) UpdatePlatePreview(view.HoveredPlateSlot.Value);
     }
@@ -192,7 +184,6 @@ public class LocomotivePresenter : IDisposable
         view.PlateSlotHovered -= UpdatePlatePreview;
         view.PlateSlotExited -= view.HidePlacementPreview;
         view.PlateSlotReleased -= OnPlateSlotReleased;
-        view.BoilerClicked -= OnBoilerClicked;
         view.PartHovered -= OnPartHovered;
         view.PartHovered -= CancelDismantle;
         view.PartRightPressed -= OnPartRightPressed;

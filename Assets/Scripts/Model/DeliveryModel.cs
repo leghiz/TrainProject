@@ -16,10 +16,9 @@ public class DeliveryModel
     public void Start(CargoBoxModel box, WagonModel wagon, int destinationColumn)
     {
         Box = box;
-        Wagon = wagon;
         DestinationColumn = destinationColumn;
-        wagon.BoxRemoved += OnBoxRemoved;
-        wagon.Destroyed += OnWagonDestroyed;
+        Follow(wagon);
+        box.Moved += OnBoxMoved;
         Started?.Invoke();
     }
     
@@ -59,6 +58,28 @@ public class DeliveryModel
     }
 
     private void OnWagonDestroyed() => Fail("вагон с ящиком отвалился");
+
+    // Ящик переставили в другой вагон — теперь следим за ним.
+    private void OnBoxMoved(WagonModel wagon)
+    {
+        if (!IsActive || wagon == Wagon) return;
+        Unfollow();
+        Follow(wagon);
+    }
+
+    private void Follow(WagonModel wagon)
+    {
+        Wagon = wagon;
+        wagon.BoxRemoved += OnBoxRemoved;
+        wagon.Destroyed += OnWagonDestroyed;
+    }
+
+    private void Unfollow()
+    {
+        if (Wagon == null) return;
+        Wagon.BoxRemoved -= OnBoxRemoved;
+        Wagon.Destroyed -= OnWagonDestroyed;
+    }
     
     public void OnWagonDetached(WagonModel wagon)
     {
@@ -81,11 +102,8 @@ public class DeliveryModel
 
     private void Clear()
     {
-        if (Wagon != null)
-        {
-            Wagon.BoxRemoved -= OnBoxRemoved;
-            Wagon.Destroyed -= OnWagonDestroyed;
-        }
+        Unfollow();
+        if (Box != null) Box.Moved -= OnBoxMoved;
         Box = null;
         Wagon = null;
     }

@@ -31,6 +31,7 @@ public class Game : MonoBehaviour
     [Header("Интерфейс (Canvas)")]
     [SerializeField] private ResourcePanelView resourcePanel;
     [SerializeField] private WorkbenchPanelView workbenchPanel;
+    [SerializeField] private BoilerMenuView boilerMenu;
     [SerializeField] private MapScreenView mapScreen;
     [SerializeField] private StationScreenView stationScreen;
 
@@ -65,6 +66,7 @@ public class Game : MonoBehaviour
     private DismantlePresenter dismantlePresenter;
     private TrainMotionPresenter trainMotionPresenter;
     private WeatherPresenter weatherPresenter;
+    private BoilerMenuPresenter boilerMenuPresenter;
 
     // Удержание ПКМ: IsActive, Progress (0..1) и событие Changed — для кружка прогресса.
     public DismantleModel Dismantle { get; private set; }
@@ -81,6 +83,7 @@ public class Game : MonoBehaviour
 
         workbench = new WorkbenchModel(locomotiveConfig.recipes, storage);
         workbenchPresenter = new WorkbenchPresenter(workbench, storage, build, trainView.Locomotive, workbenchPanel, hover);
+        boilerMenuPresenter = new BoilerMenuPresenter(locomotive, train, storage, build, trainView.Locomotive, boilerMenu);
         handPresenter = new HandPresenter(build, handView);
         dismantlePresenter = new DismantlePresenter(Dismantle, handView);
         boilerUpgradePresenter = new BoilerUpgradePresenter(locomotive, storage, trainView.Locomotive.BoilerUpgrade);
@@ -95,7 +98,7 @@ public class Game : MonoBehaviour
         weatherPresenter = new WeatherPresenter(journey, weatherView);
         tooltipPresenter = new TooltipPresenter(hover, tooltipView);
         mapScreenPresenter = new MapScreenPresenter(journey, mapScreen);
-        stationScreenPresenter = new StationScreenPresenter(journey, stationScreen);
+        stationScreenPresenter = new StationScreenPresenter(journey, stationScreen, hover);
         disassemblePresenter = new DisassemblePresenter(cargoSelection, journey, workbench);
         journey.StateChanged += OnStateChanged;
     }
@@ -109,6 +112,7 @@ public class Game : MonoBehaviour
         trainMotionPresenter.Tick();
         Dismantle.Tick(Time.deltaTime);
         tooltipPresenter.Tick();
+        boilerMenuPresenter.Tick();
     }
 
     private void AttachStartWagon()
@@ -132,6 +136,7 @@ public class Game : MonoBehaviour
     {
         if (journey != null) journey.StateChanged -= OnStateChanged;
         weatherPresenter?.Dispose();
+        boilerMenuPresenter?.Dispose();
         disassemblePresenter?.Dispose();
         dismantlePresenter?.Dispose();
         stationScreenPresenter?.Dispose();

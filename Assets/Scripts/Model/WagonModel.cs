@@ -26,6 +26,7 @@ public class WagonModel : IMachineHost
     public IReadOnlyList<CargoBoxModel> Boxes => boxes;
     public event Action<CargoBoxModel> BoxPlaced;
     public event Action<CargoBoxModel> BoxRemoved;
+    public event Action<CargoBoxModel> BoxTaken;
 
     public WagonCondition Condition { get; }
     
@@ -147,11 +148,39 @@ public class WagonModel : IMachineHost
     
     public void RemoveBox(CargoBoxModel box)
     {
-        if (!boxes.Remove(box)) return;
+        if (!TakeBoxOut(box)) return;
+        BoxRemoved?.Invoke(box);
+    }
+
+    // Снять ящик целиком (для перестановки): посылка при этом не проваливается.
+    public bool TakeBox(CargoBoxModel box)
+    {
+        if (!TakeBoxOut(box)) return false;
+        BoxTaken?.Invoke(box);
+        return true;
+    }
+
+    public bool TryPlaceExistingBox(CargoBoxModel box, Vector2Int cell)
+    {
+        if (!CanPlaceBox(box.Config, cell)) return false;
+
+        for (int x = 0; x < box.Config.size.x; x++)
+        for (int y = 0; y < box.Config.size.y; y++)
+            boxGrid[cell.x + x, cell.y + y] = box;
+
+        boxes.Add(box);
+        box.MoveTo(cell, this);
+        BoxPlaced?.Invoke(box);
+        return true;
+    }
+
+    private bool TakeBoxOut(CargoBoxModel box)
+    {
+        if (!boxes.Remove(box)) return false;
         for (int x = 0; x < box.Config.size.x; x++)
         for (int y = 0; y < box.Config.size.y; y++)
             boxGrid[box.Cell.x + x, box.Cell.y + y] = null;
-        BoxRemoved?.Invoke(box);
+        return true;
     }
     
     private void RemoveFinishedMachines()

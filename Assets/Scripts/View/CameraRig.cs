@@ -92,6 +92,7 @@ public class CameraRig : MonoBehaviour
             float wheel = mouse.scroll.ReadValue().y;
             if (!Mathf.Approximately(wheel, 0f)) targetZoom -= Mathf.Sign(wheel) * zoomStep;
         }
+        if (PointerOverUI.Modal != null) targetZoom = 1f;
         targetZoom = Mathf.Clamp(targetZoom, 1f, Mathf.Max(maxZoomOut, 1f));
         Zoom = Mathf.Lerp(Zoom, targetZoom, 1f - Mathf.Exp(-zoomSmoothing * Time.unscaledDeltaTime));
         if (Mathf.Abs(Zoom - targetZoom) < 0.001f) Zoom = targetZoom;
@@ -153,7 +154,7 @@ public class CameraRig : MonoBehaviour
         var normalized = new Vector2(
             Mathf.Clamp(screen.x / Mathf.Max(cam.pixelWidth, 1) * 2f - 1f, -1f, 1f),
             Mathf.Clamp(screen.y / Mathf.Max(cam.pixelHeight, 1) * 2f - 1f, -1f, 1f));
-        var target = Vector2.Scale(normalized, mouseParallax);
+        var target = PointerOverUI.Modal != null ? Vector2.zero : Vector2.Scale(normalized, mouseParallax);
         parallax = Vector2.Lerp(parallax, target, 1f - Mathf.Exp(-parallaxSmoothing * Time.unscaledDeltaTime));
     }
 

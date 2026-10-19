@@ -62,14 +62,16 @@ public class StationModel
     
     public WagonModel Preview(int index) => CreateWagon(offers[index]);
     
-    public WagonModel Pick(int index, TrainModel train)
+    // at — куда в состав встаёт вагон (0 — сразу за локомотивом); меньше 0 — в хвост.
+    public WagonModel Pick(int index, TrainModel train, int at = -1)
     {
         if (!CanPick || index < 0 || index >= offers.Count) return null;
 
         var wagon = CreateWagon(offers[index]);
         offers.RemoveAt(index);
         PicksLeft--;
-        train.Attach(wagon);
+        if (at >= 0) train.Insert(wagon, at);
+        else train.Attach(wagon);
         Changed?.Invoke();
         return wagon;
     }

@@ -68,7 +68,8 @@ public class JourneyModel
         return false;
     }
     
-    public bool AcceptCargo(int index)
+    // at — куда в состав встаёт вагон с посылкой (0 — сразу за локомотивом); меньше 0 — в хвост.
+    public bool AcceptCargo(int index, int at = -1)
     {
         if (State != JourneyState.Station || Delivery.IsActive || CurrentStation == null) return false;
         var offers = CurrentStation.CargoOffers;
@@ -76,7 +77,8 @@ public class JourneyModel
         var offer = offers[index];
 
         var wagon = new WagonModel(offer.Wagon);
-        Train.Attach(wagon);
+        if (at >= 0) Train.Insert(wagon, at);
+        else Train.Attach(wagon);
         var box = wagon.TryPlaceBox(offer.Box, Vector2Int.zero);
         if (box == null) return false;
 

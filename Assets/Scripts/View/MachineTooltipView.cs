@@ -59,6 +59,7 @@ public class MachineTooltipView : MonoBehaviour
     [Tooltip("На сколько пикселей выезжает снизу при появлении")]
     [SerializeField] private float rise = 6f;
 
+    private Material defaultTraitMaterial;
     private SpriteRenderer[] sprites;
     private Color[] spriteColors;
     private TMP_Text[] texts;
@@ -79,6 +80,7 @@ public class MachineTooltipView : MonoBehaviour
         if (resourceGroup != null) resourcePosition = resourceGroup.transform.localPosition;
         if (hpGroup != null) hpPosition = hpGroup.transform.localPosition;
 
+        if (traitName != null) defaultTraitMaterial = traitName.fontSharedMaterial;
         sprites = root.GetComponentsInChildren<SpriteRenderer>(true);
         spriteColors = new Color[sprites.Length];
         for (int i = 0; i < sprites.Length; i++) spriteColors[i] = sprites[i].color;
@@ -121,7 +123,12 @@ public class MachineTooltipView : MonoBehaviour
         if (side != null) side.gameObject.SetActive(hasTrait);
         if (hasTrait)
         {
-            if (traitName != null) traitName.text = content.TraitName;
+            if (traitName != null)
+            {
+                traitName.text = content.TraitName;
+                var material = content.TraitMaterial != null ? content.TraitMaterial : defaultTraitMaterial;
+                if (material != null && traitName.fontSharedMaterial != material) traitName.fontSharedMaterial = material;
+            }
             if (traitInfo != null) traitInfo.text = content.TraitInfo;
         }
 
@@ -226,7 +233,7 @@ public class MachineTooltipView : MonoBehaviour
         }
         for (int i = 0; i < sprites.Length; i++)
         {
-            var color = spriteColors[i];
+            var color = UiPalette.For(sprites[i], spriteColors[i]);
             color.a *= alpha;
             sprites[i].color = color;
         }

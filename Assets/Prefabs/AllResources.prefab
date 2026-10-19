@@ -651,6 +651,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8918086845802591496}
   - component: {fileID: 581439217253459152}
+  - component: {fileID: 545833905290448422}
   m_Layer: 0
   m_Name: AllResources
   m_TagString: Untagged
@@ -691,6 +692,19 @@ MonoBehaviour:
   woodAmount: {fileID: 4803472688497379193}
   scrapAmount: {fileID: 6263462011495344624}
   ingotAmount: {fileID: 5481957145337798056}
+--- !u!114 &545833905290448422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4416238747813840591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ac4fd055ae9bd14ea06625e716bc79b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PaletteSwap
+  keep: []
 --- !u!1 &4627427599441579811
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class WagonTooltipView : MonoBehaviour
 {
@@ -8,15 +9,18 @@ public class WagonTooltipView : MonoBehaviour
     [Tooltip("Точка внизу по центру, вокруг неё тултип раздувается при появлении")]
     [SerializeField] private Transform pop;
 
+    [Tooltip("Какой вагон: Standard, Rusty, New, Ghost")]
     [SerializeField] private TMP_Text condition;
     [SerializeField] private TMP_Text scrapCount;
     [SerializeField] private TMP_Text woodCount;
 
-    [Header("Состояние вагона (под вагоном)")]
-    [Tooltip("Панель со стрелкой: ставится под нижний край вагона, прячется у вагона без эффектов")]
-    [SerializeField] private Transform conditionPanel;
-    [SerializeField] private TMP_Text conditionName;
-    [SerializeField] private TMP_Text conditionInfo;
+    [Header("Клетки вагона (под вагоном)")]
+    [Tooltip("Панель со стрелкой: ставится под нижний край вагона")]
+    [FormerlySerializedAs("conditionPanel")]
+    [SerializeField] private Transform cellsPanel;
+    [Tooltip("Сколько клеток в вагоне")]
+    [FormerlySerializedAs("conditionInfo")]
+    [SerializeField] private TMP_Text cellsCount;
     [Tooltip("Расстояние от точки тултипа до верхнего края вагона, пиксели (Tooltip Offset у вагона)")]
     [SerializeField] private float anchorAboveWagon = 4f;
 
@@ -25,6 +29,23 @@ public class WagonTooltipView : MonoBehaviour
     [SerializeField] private Transform hpFill;
     [Tooltip("Ширина полоски в пикселях: доля хп округляется до целого пикселя")]
     [SerializeField] private int hpWidth = 32;
+
+    [Header("Что даёт состояние вагона (над шапкой)")]
+    [Tooltip("Плашка со свойствами (Draw Mode: Sliced): растягивается под текст. У обычного вагона прячется")]
+    [SerializeField] private SpriteRenderer effectsPanel;
+    [SerializeField] private TMP_Text effectsText;
+    [Tooltip("Стрелка под плашкой, вниз на шапку")]
+    [SerializeField] private SpriteRenderer effectsArrow;
+    [Tooltip("Отступ текста от краёв плашки, пиксели")]
+    [SerializeField] private Vector2 effectsPadding = new Vector2(4f, 3f);
+    [Tooltip("Где верхний край шапки относительно её центра, пиксели")]
+    [SerializeField] private float headerTop = 8.5f;
+    [Tooltip("От верхнего края шапки до стрелки, пиксели")]
+    [SerializeField] private float arrowAboveHeader = 1f;
+    [Tooltip("От стрелки до плашки, пиксели")]
+    [SerializeField] private float arrowGap = 2f;
+    [Tooltip("Материал названия у вагона без состояния. Пусто — тот, что стоит у текста")]
+    [SerializeField] private Material defaultNameMaterial;
 
     [Header("Появление")]
     [Tooltip("Насколько выше точки над вагоном, в пикселях")]
@@ -49,6 +70,7 @@ public class WagonTooltipView : MonoBehaviour
 
     private void Awake()
     {
+        if (defaultNameMaterial == null && condition != null) defaultNameMaterial = condition.fontSharedMaterial;
         renderers = root.GetComponentsInChildren<Renderer>(true);
         sprites = root.GetComponentsInChildren<SpriteRenderer>(true);
         spriteColors = new Color[sprites.Length];
@@ -66,7 +88,12 @@ public class WagonTooltipView : MonoBehaviour
             Animate();
         }
 
-        if (condition != null) condition.text = content.Condition;
+        if (condition != null)
+        {
+            condition.text = content.Condition;
+            var nameMaterial = content.ConditionMaterial != null ? content.ConditionMaterial : defaultNameMaterial;
+            if (nameMaterial != null && condition.fontSharedMaterial != nameMaterial) condition.fontSharedMaterial = nameMaterial;
+        }
         if (scrapCount != null) scrapCount.text = content.Scrap.ToString();
         if (woodCount != null) woodCount.text = content.Wood.ToString();
         if (hpFill != null)
@@ -76,25 +103,43 @@ public class WagonTooltipView : MonoBehaviour
             hpFill.localScale = new Vector3(Mathf.Round(share * width) / width, 1f, 1f);
         }
 
+        LayoutEffects(content);
         transform.position = new Vector3(Mathf.Round(anchor.x), Mathf.Round(anchor.y + lift), 0f);
         KeepOnScreen();
 
-        if (conditionPanel != null)
+        if (cellsPanel != null)
         {
-            bool hasEffects = !string.IsNullOrEmpty(content.ConditionInfo);
-            conditionPanel.gameObject.SetActive(hasEffects);
-            if (hasEffects)
-            {
-                if (conditionName != null) conditionName.text = content.Condition;
-                if (conditionInfo != null) conditionInfo.text = content.ConditionInfo;
-                float bottom = anchor.y - anchorAboveWagon - content.Size.y;
-                var chain = Vector3.zero;
-                for (var parent = conditionPanel.parent; parent != null && parent != pop && parent != transform; parent = parent.parent)
-                    chain += parent.localPosition;
-                var target = new Vector3(Mathf.Round(anchor.x) - transform.position.x, Mathf.Round(bottom) - transform.position.y, 0f);
-                conditionPanel.localPosition = target - chain;
-            }
+            if (cellsCount != null) cellsCount.text = content.Cells.ToString();
+            float bottom = anchor.y - anchorAboveWagon - content.Size.y;
+            var chain = Vector3.zero;
+            for (var parent = cellsPanel.parent; parent != null && parent != pop && parent != transform; parent = parent.parent)
+                chain += parent.localPosition;
+            var target = new Vector3(Mathf.Round(anchor.x) - transform.position.x, Mathf.Round(bottom) - transform.position.y, 0f);
+            cellsPanel.localPosition = target - chain;
         }
+    }
+
+    // Над шапкой — плашка «что даёт состояние вагона» со стрелкой вниз. У обычного вагона её нет.
+    private void LayoutEffects(TooltipContent content)
+    {
+        bool show = !string.IsNullOrEmpty(content.Effects) && effectsPanel != null && effectsText != null;
+        if (effectsPanel != null) effectsPanel.gameObject.SetActive(show);
+        if (effectsText != null) effectsText.gameObject.SetActive(show);
+        if (effectsArrow != null) effectsArrow.gameObject.SetActive(show);
+        if (!show) return;
+
+        if (effectsText.text != content.Effects) effectsText.text = content.Effects;
+        var size = effectsText.GetPreferredValues(content.Effects);
+        float width = Mathf.Ceil((size.x + effectsPadding.x * 2f) / 2f) * 2f;
+        float height = Mathf.Ceil(size.y + effectsPadding.y * 2f);
+        effectsPanel.size = new Vector2(width, height);
+
+        float arrowHalf = effectsArrow != null && effectsArrow.sprite != null ? effectsArrow.sprite.bounds.size.y / 2f : 0f;
+        float arrowY = headerTop + arrowAboveHeader + arrowHalf;
+        if (effectsArrow != null) effectsArrow.transform.localPosition = new Vector3(0f, arrowY, 0f);
+        var center = new Vector3(0f, arrowY + arrowHalf + arrowGap + height / 2f, 0f);
+        effectsPanel.transform.localPosition = center;
+        effectsText.transform.localPosition = center;
     }
 
     public void Hide()
@@ -141,7 +186,7 @@ public class WagonTooltipView : MonoBehaviour
         }
         for (int i = 0; i < sprites.Length; i++)
         {
-            var color = spriteColors[i];
+            var color = UiPalette.For(sprites[i], spriteColors[i]);
             color.a *= alpha;
             sprites[i].color = color;
         }

@@ -11,8 +11,14 @@ public class LocomotiveView : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer body;
 
+    [Tooltip("Полоска хп целиком: прячется, пока открыто меню коптильни или верстака")]
+    [SerializeField] private GameObject hpBar;
+
     [Tooltip("Точка у левого края полоски хп. Её масштаб по X = доля оставшегося хп")]
     [SerializeField] private Transform hpFill;
+
+    [Tooltip("Ширина полоски в пикселях: доля хп округляется до целого пикселя")]
+    [SerializeField] private int hpWidth = 32;
 
     [Tooltip("Число хп рядом с полоской, например 150/200 (можно не заполнять)")]
     [SerializeField] private TextMesh hpText;
@@ -22,6 +28,12 @@ public class LocomotiveView : MonoBehaviour
 
     [Header("Места станков (центры мест — двигать под спрайт локомотива)")]
     [SerializeField] private MachineView machinePrefab;
+    [Tooltip("Коптильня, которая уже стоит в префабе. Пусто — создаётся из Machine Prefab в BoilerSlot")]
+    [SerializeField] private MachineView boiler;
+    [Tooltip("Верстак, который уже стоит в префабе. Пусто — создаётся из Machine Prefab в WorkbenchSlot")]
+    [SerializeField] private MachineView workbench;
+    [Tooltip("Клетка под сварку: видна, пока сварка в руке")]
+    [SerializeField] private SlotCellView welderCell;
     [SerializeField] private Transform boilerSlot;
     [SerializeField] private Transform workbenchSlot;
     [SerializeField] private Transform welderSlot;
@@ -55,6 +67,8 @@ public class LocomotiveView : MonoBehaviour
     [SerializeField] private GameObject craftProgressBar;
     [Tooltip("Точка у левого края полоски: её масштаб по X = доля готовности")]
     [SerializeField] private Transform craftProgressFill;
+    [Tooltip("Ширина полоски в пикселях: заполнение округляется до целого пикселя")]
+    [SerializeField] private int craftProgressWidth = 16;
 
     [Header("Разрушение")]
     [Tooltip("Что происходит, когда локомотив разрушен: анимация, другой спрайт, дым — настраивается здесь без кода")]
@@ -89,6 +103,23 @@ public class LocomotiveView : MonoBehaviour
 
     private bool fogged;
 
+    // Коптильню и верстак двигают прямо в сцене: место для клика, меню и то, что висит над ними, едут следом.
+    private void Awake()
+    {
+        Follow(boiler, boilerSlot, boilerUpgrade != null ? boilerUpgrade.transform : null);
+        Follow(workbench, workbenchSlot, readyIcon != null ? readyIcon.transform : null,
+               craftProgressBar != null ? craftProgressBar.transform : null);
+    }
+
+    private static void Follow(MachineView machine, Transform slot, params Transform[] riders)
+    {
+        if (machine == null || slot == null) return;
+        var delta = machine.transform.position - slot.position;
+        slot.position += delta;
+        foreach (var rider in riders)
+            if (rider != null) rider.position += delta;
+    }
+
     public void SetFogged(bool value)
     {
         fogged = value;
@@ -98,8 +129,32 @@ public class LocomotiveView : MonoBehaviour
 
     public void SetHp(int hp, int maxHp)
     {
-        hpFill.localScale = new Vector3(maxHp > 0 ? (float)hp / maxHp : 0f, 1f, 1f);
+        float share = maxHp > 0 ? Mathf.Clamp01((float)hp / maxHp) : 0f;
+        int width = Mathf.Max(hpWidth, 1);
+        hpFill.localScale = new Vector3(Mathf.Round(share * width) / width, 1f, 1f);
         if (hpText != null) hpText.text = $"{hp}/{maxHp}";
+    }
+
+    private readonly System.Collections.Generic.HashSet<object> hpHiders = new System.Collections.Generic.HashSet<object>();
+
+    // Меню коптильни и верстака ложатся на полоску хп — пока хоть одно открыто, полоска спрятана.
+    public void HideHp(object who, bool hide)
+    {
+        if (hide) hpHiders.Add(who);
+        else hpHiders.Remove(who);
+        if (hpBar != null) hpBar.SetActive(hpHiders.Count == 0);
+    }
+
+    // Пока открыто меню, сама коптильня или верстак обведены.
+    public void HighlightBoiler(bool value) => Pin(boiler, value);
+
+    public void HighlightWorkbench(bool value) => Pin(workbench, value);
+
+    private static void Pin(MachineView machine, bool value)
+    {
+        if (machine == null) return;
+        var outline = machine.GetComponent<HoverOutline>();
+        if (outline != null) outline.Pinned = value;
     }
 
     public Vector3 TooltipPoint => tooltipPoint != null ? tooltipPoint.position : transform.position + Vector3.up * Height / 2f;
@@ -110,15 +165,32 @@ public class LocomotiveView : MonoBehaviour
 
     public BoilerUpgradeView BoilerUpgrade => boilerUpgrade;
 
+    private float? craftProgress;
+
     public void SetCraftProgress(float? progress)
     {
-        if (craftProgressBar != null) craftProgressBar.SetActive(progress.HasValue);
-        if (progress.HasValue && craftProgressFill != null)
-            craftProgressFill.localScale = new Vector3(Mathf.Clamp01(progress.Value), 1f, 1f);
+        craftProgress = progress;
+        ApplyCraftProgress();
+    }
+
+    // Полоска крафта висит там же, где готовый станок, и прячется вместе с ним (меню коптильни).
+    private void ApplyCraftProgress()
+    {
+        if (craftProgressBar != null) craftProgressBar.SetActive(craftProgress.HasValue && !readySuppressed);
+        if (!craftProgress.HasValue || craftProgressFill == null) return;
+        int width = Mathf.Max(craftProgressWidth, 1);
+        craftProgressFill.localScale = new Vector3(Mathf.Round(Mathf.Clamp01(craftProgress.Value) * width) / width, 1f, 1f);
     }
     
     public MachineView AddMachine(LocomotiveSlot slot)
     {
+        var placed = slot == LocomotiveSlot.Boiler ? boiler : slot == LocomotiveSlot.Workbench ? workbench : null;
+        if (placed != null)
+        {
+            placed.gameObject.SetActive(true);
+            if (fogged) foreach (var outline in placed.GetComponentsInChildren<HoverOutline>(true)) outline.enabled = false;
+            return placed;
+        }
         var machine = Instantiate(machinePrefab, SlotAnchor(slot).position, Quaternion.identity, transform);
         if (fogged) foreach (var outline in machine.GetComponentsInChildren<HoverOutline>(true)) outline.enabled = false;
         return machine;
@@ -126,15 +198,29 @@ public class LocomotiveView : MonoBehaviour
 
     public void RemoveMachine(MachineView machine) => Destroy(machine.gameObject);
 
+    public void ShowWelderCell(bool value)
+    {
+        if (welderCell != null) welderCell.Show(value);
+    }
+
     public void ShowWelderPreview(bool canPlace)
     {
+        if (welderCell != null)
+        {
+            welderCell.Highlight(canPlace);
+            return;
+        }
         placementPreview.gameObject.SetActive(true);
         placementPreview.color = canPlace ? canPlaceColor : cannotPlaceColor;
         placementPreview.transform.position = welderSlot.position;
         placementPreview.transform.localScale = new Vector3(cellSize, cellSize, 1f);
     }
 
-    public void HidePlacementPreview() => placementPreview.gameObject.SetActive(false);
+    public void HidePlacementPreview()
+    {
+        placementPreview.gameObject.SetActive(false);
+        if (welderCell != null) welderCell.ClearHighlight();
+    }
 
     public MachineView AddPlate(int slot)
     {
@@ -151,13 +237,31 @@ public class LocomotiveView : MonoBehaviour
         placementPreview.transform.localScale = new Vector3(plateSlotSize.x, plateSlotSize.y, 1f);
     }
 
+    private bool readyWanted;
+    private bool readySuppressed;
+
     public void ShowReady(Sprite sprite)
     {
         readyIcon.sprite = sprite;
-        readyIcon.gameObject.SetActive(true);
+        readyWanted = true;
+        ApplyReady();
     }
 
-    public void HideReady() => readyIcon.gameObject.SetActive(false);
+    public void HideReady()
+    {
+        readyWanted = false;
+        ApplyReady();
+    }
+
+    // Пока открыто меню коптильни, готовый станок не показываем: он лёг бы на кнопку «+».
+    public void SuppressReady(bool value)
+    {
+        readySuppressed = value;
+        ApplyReady();
+        ApplyCraftProgress();
+    }
+
+    private void ApplyReady() => readyIcon.gameObject.SetActive(readyWanted && !readySuppressed);
 
     private void Update()
     {
@@ -178,7 +282,7 @@ public class LocomotiveView : MonoBehaviour
         if (welderChanged && hovered) WelderSlotHovered?.Invoke();
         if (plateChanged && plateSlot.HasValue) PlateSlotHovered?.Invoke(plateSlot.Value);
 
-        var part = fogged ? LocomotivePart.None : PartAt(world, hovered);
+        var part = fogged || PointerOverUI.Check() ? LocomotivePart.None : PartAt(world, hovered);
         if (part != HoveredPart)
         {
             HoveredPart = part;
