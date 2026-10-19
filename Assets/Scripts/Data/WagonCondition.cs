@@ -10,7 +10,4 @@ public class WagonCondition : ScriptableObject
 
     [Tooltip("Множитель веса для скорости поезда (Ржавый 0.5, Призрачный 0)")]
     [Min(0f)] public float weightMultiplier = 1f;
-
-    [Tooltip("Временная подкраска вагона (потом будет шейдер)")]
-    public Color tint = Color.white;
 }

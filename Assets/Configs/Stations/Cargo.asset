@@ -20,6 +20,14 @@ MonoBehaviour:
   conditions: []
   woodMultiplier: 1
   scrapMultiplier: 1
+  cargoBoxes:
+  - {fileID: 11400000, guid: 03a4f455db7f1bc4195477a8f4206ce8, type: 2}
+  - {fileID: 11400000, guid: a1035edede4ec4644b51c3fcd458bda4, type: 2}
+  - {fileID: 11400000, guid: 70c5e6d801964d94caae59b7d05cddfa, type: 2}
+  - {fileID: 11400000, guid: 62a8e2cb4ab2db54690c552a5a38f9aa, type: 2}
+  cargoWagons:
+  - {fileID: 11400000, guid: 2e521d0f9afc76f428ce62ab6c5675d1, type: 2}
+  - {fileID: 11400000, guid: ae4d5ba43aaeb7343b2a4b1174581cb8, type: 2}
   eventsOnWayHere:
   - travelEvent: {fileID: 11400000, guid: dad96066807fe79409f6a51c9ff6922f, type: 2}
     chance: 1

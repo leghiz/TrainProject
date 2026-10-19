@@ -19,11 +19,25 @@ public class WagonModel : IMachineHost
 
     public event Action<MachineModel> MachinePlaced;
     public event Action<MachineModel> MachineRemoved;
-    public event Action ResourcesChanged; 
+    public event Action ResourcesChanged;
     
+    private readonly CargoBoxModel[,] boxGrid;
+    private readonly List<CargoBoxModel> boxes = new List<CargoBoxModel>();
+    public IReadOnlyList<CargoBoxModel> Boxes => boxes;
+    public event Action<CargoBoxModel> BoxPlaced;
+    public event Action<CargoBoxModel> BoxRemoved;
+
     public WagonCondition Condition { get; }
     
-    public float Weight => Config.size.x * Config.size.y * (Condition != null ? Condition.weightMultiplier : 1f);
+    public float Weight
+    {
+        get
+        {
+            float weight = Config.size.x * Config.size.y * (Condition != null ? Condition.weightMultiplier : 1f);
+            foreach (var box in boxes) weight += box.Config.weight;
+            return weight;
+        }
+    }
     
     public WagonModel(WagonConfig config, WagonCondition condition = null, float woodMultiplier = 1f, float scrapMultiplier = 1f)
     {
@@ -34,6 +48,7 @@ public class WagonModel : IMachineHost
         Wood = Mathf.RoundToInt(config.wood * resources * woodMultiplier);
         Scrap = Mathf.RoundToInt(config.scrap * resources * scrapMultiplier);
         grid = new MachineModel[config.size.x, config.size.y];
+        boxGrid = new CargoBoxModel[config.size.x, config.size.y];
     }
 
     public void Damage(int amount)
@@ -102,11 +117,41 @@ public class WagonModel : IMachineHost
         RemoveFinishedMachines();
     }
     
-    public void DamageMachines(int damage)
+    public void TakeRain(int damage)
     {
         if (damage <= 0) return;
-        foreach (var machine in machines) machine.Damage(damage);
+        foreach (var machine in machines)
+            if (!machine.IsRainproof) machine.Damage(damage);
         RemoveFinishedMachines();
+
+        foreach (var box in boxes) box.Damage(damage);
+        for (int i = boxes.Count - 1; i >= 0; i--)
+            if (boxes[i].IsBroken) RemoveBox(boxes[i]);
+    }
+
+    public bool CanPlaceBox(CargoBoxConfig box, Vector2Int cell) => IsAreaFree(cell, box.size);
+    
+    public CargoBoxModel TryPlaceBox(CargoBoxConfig config, Vector2Int cell)
+    {
+        if (!CanPlaceBox(config, cell)) return null;
+
+        var box = new CargoBoxModel(config, cell);
+        for (int x = 0; x < config.size.x; x++)
+        for (int y = 0; y < config.size.y; y++)
+            boxGrid[cell.x + x, cell.y + y] = box;
+
+        boxes.Add(box);
+        BoxPlaced?.Invoke(box);
+        return box;
+    }
+    
+    public void RemoveBox(CargoBoxModel box)
+    {
+        if (!boxes.Remove(box)) return;
+        for (int x = 0; x < box.Config.size.x; x++)
+        for (int y = 0; y < box.Config.size.y; y++)
+            boxGrid[box.Cell.x + x, box.Cell.y + y] = null;
+        BoxRemoved?.Invoke(box);
     }
     
     private void RemoveFinishedMachines()
@@ -126,26 +171,28 @@ public class WagonModel : IMachineHost
         machines.Remove(machine);
         MachineRemoved?.Invoke(machine);
     }
-    
-    public bool CanPlace(MachineConfig machine, Vector2Int cell)
+
+    public bool CanPlace(MachineConfig machine, Vector2Int cell) => IsAreaFree(cell, machine.size);
+
+    private bool IsAreaFree(Vector2Int cell, Vector2Int size)
     {
         if (IsDestroyed) return false;
 
-        for (int x = 0; x < machine.size.x; x++)
-        for (int y = 0; y < machine.size.y; y++)
+        for (int x = 0; x < size.x; x++)
+        for (int y = 0; y < size.y; y++)
         {
             var c = new Vector2Int(cell.x + x, cell.y + y);
-            if (!IsInside(c)) return false; 
-            if (grid[c.x, c.y] != null) return false; 
+            if (!IsInside(c)) return false;
+            if (grid[c.x, c.y] != null || boxGrid[c.x, c.y] != null) return false;
         }
         return true;
     }
 
-    public bool TryPlace(MachineConfig machine, Vector2Int cell)
+    public bool TryPlace(MachineConfig machine, Vector2Int cell, MachineTrait trait = null)
     {
         if (!CanPlace(machine, cell)) return false;
 
-        var placed = new MachineModel(machine, cell);
+        var placed = new MachineModel(machine, cell, trait);
         for (int x = 0; x < machine.size.x; x++)
         for (int y = 0; y < machine.size.y; y++)
             grid[cell.x + x, cell.y + y] = placed;

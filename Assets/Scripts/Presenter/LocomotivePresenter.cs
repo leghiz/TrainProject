@@ -69,7 +69,7 @@ public class LocomotivePresenter : IDisposable
     {
         var machine = build.Selected;
         if (machine == null) return;
-        if (model.TryPlaceWelder(machine)) UpdatePreview();
+        if (model.TryPlaceWelder(machine, build.SelectedTrait)) UpdatePreview();
     }
 
     private void OnSelectedChanged(MachineConfig machine)

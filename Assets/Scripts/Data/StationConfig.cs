@@ -29,6 +29,13 @@ public class StationConfig : ScriptableObject
     [Tooltip("Множитель запаса лома у вагонов этой станции (Металлосклад)")]
     [Min(0f)] public float scrapMultiplier = 1f;
 
+    [Header("Посылки (Грузовая)")]
+    [Tooltip("Какие ящики предлагают отвезти. Пусто — станция посылок не даёт")]
+    [Expandable] public CargoBoxConfig[] cargoBoxes;
+
+    [Tooltip("Какой вагончик дают вместе с посылкой (3×1 или 2×2). Выбирается тот, куда ящик влезает")]
+    [Expandable] public WagonConfig[] cargoWagons;
+
     [Header("События на дорожках")]
     [Tooltip("Что может случиться на пути К этой станции (Лесосклад — дождь, Грузовая — ветер)")]
     public EventChance[] eventsOnWayHere;

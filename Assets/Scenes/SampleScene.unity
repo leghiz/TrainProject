@@ -436,6 +436,10 @@ MonoBehaviour:
   stormConfig: {fileID: 11400000, guid: e941d362d7bb74c4289034fb1f554e7d, type: 2}
   stormPrefab: {fileID: 7776970728425128608, guid: ce5d978b22ce9a74a8c8f5a9e48c65d7, type: 3}
   journeyConfig: {fileID: 11400000, guid: 2b6c1bfa2a9470947908907afac5a5f8, type: 2}
+  traits:
+  - {fileID: 11400000, guid: b14032ef04c6e09478a4a6626be9bc81, type: 2}
+  - {fileID: 11400000, guid: 8cebec1afad00a041bdd3fa156972f0a, type: 2}
+  - {fileID: 11400000, guid: 2fc1877bf0f901e459f9e8bddccf4d80, type: 2}
 --- !u!4 &979237767
 Transform:
   m_ObjectHideFlags: 0
