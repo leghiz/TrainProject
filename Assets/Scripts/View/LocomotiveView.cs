@@ -46,6 +46,10 @@ public class LocomotiveView : MonoBehaviour
     [Tooltip("Иконка над локомотивом: её хватают мышкой и тащат на вагон")]
     [SerializeField] private SpriteRenderer readyIcon;
 
+    [Header("Улучшение Коптильни")]
+    [Tooltip("Кнопка улучшения на локомотиве (с ценой)")]
+    [SerializeField] private BoilerUpgradeView boilerUpgrade;
+
     [Header("Прогресс крафта")]
     [Tooltip("Полоска целиком: видна, пока верстак что-то делает")]
     [SerializeField] private GameObject craftProgressBar;
@@ -99,6 +103,8 @@ public class LocomotiveView : MonoBehaviour
     public Vector3 TooltipPoint => tooltipPoint != null ? tooltipPoint.position : transform.position + Vector3.up * Height / 2f;
 
     public void ShowDestroyed() => onDestroyed?.Invoke();
+
+    public BoilerUpgradeView BoilerUpgrade => boilerUpgrade;
 
     public void SetCraftProgress(float? progress)
     {

@@ -24,8 +24,15 @@ public static class TooltipTexts
         return new TooltipContent
         {
             Title = boiler.Config.displayName,
-            Info = $"уровень {locomotive.BoilerLevel}\nдерево {boiler.Loaded}/{boiler.Capacity}\nклик — загрузить"
+            Info = $"уровень {locomotive.BoilerLevel}\nдерево {boiler.Loaded}/{boiler.Capacity}\nклик — загрузить" + UpgradeInfo(locomotive)
         };
+    }
+
+    private static string UpgradeInfo(LocomotiveModel locomotive)
+    {
+        if (!locomotive.CanUpgradeBoiler) return "\nмаксимальный уровень";
+        var next = locomotive.NextLevel;
+        return $"\nур. {locomotive.BoilerLevel + 1} за {locomotive.UpgradeCost} слитков:\nбак {next.tank}, скорость {next.speed:0.##}, тяга {next.traction}";
     }
 
     public static TooltipContent Box(CargoBoxModel box) => new TooltipContent

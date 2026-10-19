@@ -37,6 +37,7 @@ public class WagonSandbox : MonoBehaviour
     private TooltipPresenter tooltipPresenter;
     private MapScreenPresenter mapScreenPresenter;
     private StationScreenPresenter stationScreenPresenter;
+    private BoilerUpgradePresenter boilerUpgradePresenter;
     private float logTimer;
     private int traitIndex = -1; 
 
@@ -65,6 +66,7 @@ public class WagonSandbox : MonoBehaviour
         workbench.ReadyChanged += m => Debug.Log(m != null ? $"[Верстак] готов {m.displayName} — тащи иконку на вагон" : "[Верстак] слот свободен");
         workbenchPresenter = new WorkbenchPresenter(workbench, storage, build, trainView.Locomotive, workbenchPanel, hover);
         handPresenter = new HandPresenter(build, handView);
+        boilerUpgradePresenter = new BoilerUpgradePresenter(locomotive, storage, trainView.Locomotive.BoilerUpgrade);
         resourcePanelPresenter = new ResourcePanelPresenter(storage, resourcePanel);
         tooltipPresenter = new TooltipPresenter(hover, tooltipView);
 
@@ -88,7 +90,6 @@ public class WagonSandbox : MonoBehaviour
 
     private void Update()
     {
-        // Крафт идёт только в пути — как и работа станков.
         if (journey.State == JourneyState.Travelling) workbench.Tick(Time.deltaTime);
         journey.Tick(Time.deltaTime);
         tooltipPresenter.Tick();
@@ -112,8 +113,6 @@ public class WagonSandbox : MonoBehaviour
             if (journey.DisassembleCargo(out var machine, out var trait)) build.Select(machine, trait);
             else Debug.Log("[Посылка] разбирать нечего");
         }
-        if (kb.uKey.wasPressedThisFrame)
-            Debug.Log(locomotive.UpgradeBoiler() ? $"[Коптильня] улучшена до уровня {locomotive.BoilerLevel}" : "[Коптильня] уже максимальный уровень");
 
         for (int i = 0; i < machines.Length && i < 9; i++)
         {
@@ -133,6 +132,7 @@ public class WagonSandbox : MonoBehaviour
     private void OnDestroy()
     {
         stationScreenPresenter?.Dispose();
+        boilerUpgradePresenter?.Dispose();
         mapScreenPresenter?.Dispose();
         tooltipPresenter?.Dispose();
         resourcePanelPresenter?.Dispose();
