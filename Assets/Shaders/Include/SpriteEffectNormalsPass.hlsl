@@ -1,8 +1,6 @@
 #ifndef TRAIN_SPRITE_EFFECT_NORMALS_PASS_INCLUDED
 #define TRAIN_SPRITE_EFFECT_NORMALS_PASS_INCLUDED
 
-// Проход NormalsRendering для 2D-света с картами нормалей. Эффекты свойств на нормали не влияют.
-// До подключения: Core2D.hlsl и CBUFFER с _Color (в HLSLINCLUDE шейдера), прагмы прохода.
 
 struct Attributes
 {
@@ -35,4 +33,4 @@ half4 SpriteEffectNormalsFragment(Varyings input) : SV_Target
     return CommonNormalsFragment(input, input.color);
 }
 
-#endif // TRAIN_SPRITE_EFFECT_NORMALS_PASS_INCLUDED
+#endif 

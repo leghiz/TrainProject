@@ -4,17 +4,13 @@
 #include "Assets/Shaders/Include/PixelNoise.hlsl"
 #include "Assets/Shaders/Include/SpriteTexel.hlsl"
 
-// Ржавчина для свойства вагона «Ржавый».
-// Подключать после прохода SpriteEffect*Pass.hlsl (там объявлена _MainTex) и CBUFFER шейдера Train/Wagon/Rust.
-// Каждый тексель спрайта получает одно решение «ржавый / пятно / чистый»,
-// поэтому ржавчина всегда совпадает с пиксельной сеткой арта.
 
 half4 Rust_SampleTexel(float2 texel)
 {
     return ST_SampleTexel(texel, ST_Size());
 }
 
-// 1 — тексель у самого края силуэта, 0 — дальше чем _EdgeWidth текселей от края
+
 float Rust_EdgeFactor(float2 texel)
 {
     static const float2 dirs[8] =
@@ -37,7 +33,7 @@ float Rust_EdgeFactor(float2 texel)
     return saturate((_EdgeWidth + 1.0 - nearest) / max(_EdgeWidth, 1.0));
 }
 
-// Насколько тексель светлее соседей: ржавчина любит швы, стыки и заклёпки
+
 float Rust_SeamFactor(float2 texel, half tone)
 {
     static const float2 dirs[4] = { float2(1.0, 0.0), float2(-1.0, 0.0), float2(0.0, 1.0), float2(0.0, -1.0) };
@@ -50,7 +46,7 @@ float Rust_SeamFactor(float2 texel, half tone)
         if (neighbour.a >= 0.5)
             darkest = min(darkest, sqrt(PN_Luma(neighbour.rgb)));
     }
-    // Слабые перепады (полосы досок) не считаем, только заметные швы и заклёпки
+
     return saturate((tone - darkest - 0.06) * 6.0);
 }
 
@@ -65,7 +61,7 @@ half3 Rust_PaletteColor(half tone, float2 p)
     return _RustHighlight.rgb;
 }
 
-// Цвет текселя спрайта с ржавчиной (без тинта SpriteRenderer)
+
 half4 Rust_Apply(float2 uv)
 {
     float2 size = ST_Size();
@@ -74,14 +70,13 @@ half4 Rust_Apply(float2 uv)
     if (baseColor.a < 0.01)
         return baseColor;
 
-    // Тон в перцептивной шкале: в линейном цветовом пространстве так проще подбирать пороги
+
     half tone = sqrt(PN_Luma(baseColor.rgb));
     if (tone <= _KeepOutline)
-        return baseColor; // контур не трогаем, силуэт остаётся чётким
+        return baseColor; 
 
     float2 p = texel + _RustSeed * float2(17.13, 31.71);
 
-    // Пятна: контрастная маска, чтобы между ними оставался чистый металл
     float blob   = smoothstep(0.42, 0.78, PN_Fbm(p / max(_BlobSize, 1.0)));
     float edge   = Rust_EdgeFactor(texel);
     float seam   = Rust_SeamFactor(texel, tone);
@@ -107,11 +102,11 @@ half4 Rust_Apply(float2 uv)
     if (rust >= heavyThreshold)
     {
         if (PN_Hash12(p * 1.37 + 5.0) < _PitChance)
-            rustColor = _RustDark.rgb * 0.7h; // раковины в металле
+            rustColor = _RustDark.rgb * 0.7h; 
         return half4(rustColor, baseColor.a);
     }
 
     return half4(lerp(baseColor.rgb, rustColor, _StainMix), baseColor.a);
 }
 
-#endif // TRAIN_WAGON_RUST_INCLUDED
+#endif 

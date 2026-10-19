@@ -1,11 +1,7 @@
 #ifndef TRAIN_SPRITE_TEXEL_INCLUDED
 #define TRAIN_SPRITE_TEXEL_INCLUDED
 
-// Доступ к текселям текстуры спрайта. Требует объявленных выше _MainTex и sampler_MainTex.
 
-// Размер текстуры берём у самой текстуры, а не из _MainTex_TexelSize:
-// при SRP Batcher спрайты с общим материалом не получают свой _MainTex_TexelSize,
-// а вынос его из CBUFFER ломает батчинг (все спрайты пачки берут текстуру первого)
 float2 ST_Size()
 {
     uint width, height;
@@ -18,10 +14,7 @@ float2 ST_TexelOf(float2 uv, float2 size)
     return floor(uv * size);
 }
 
-// Мировая позиция центра текселя в «текселях мира» (один тексель спрайта = 1).
-// Одинакова для всего текселя, разная у разных спрайтов и не ломается от батчинга
-// (под SRP Batcher у спрайтов нет своей матрицы объекта, поэтому сдвиг фазы по ней не работает).
-// Учитывает масштаб и поворот спрайта.
+
 float2 ST_TexelWorldCoord(float2 uv, float2 texel, float2 size, float3 positionWS)
 {
     float2 t = uv * size;
@@ -34,7 +27,6 @@ float2 ST_TexelWorldCoord(float2 uv, float2 texel, float2 size, float3 positionW
     if (abs(det) < 1e-8)
         return positionWS.xy;
 
-    // Сколько мира приходится на один тексель вдоль X и Y спрайта
     float2 worldPerTexelX = (dwdx * dtdy.y - dwdy * dtdx.y) / det;
     float2 worldPerTexelY = (dwdy * dtdx.x - dwdx * dtdy.x) / det;
 
@@ -44,7 +36,7 @@ float2 ST_TexelWorldCoord(float2 uv, float2 texel, float2 size, float3 positionW
     return centerWS / max(length(worldPerTexelX), 1e-5);
 }
 
-// Цвет текселя по целой координате, за пределами текстуры — прозрачный
+
 half4 ST_SampleTexel(float2 texel, float2 size)
 {
     if (texel.x < 0.0 || texel.y < 0.0 || texel.x >= size.x || texel.y >= size.y)
@@ -52,4 +44,4 @@ half4 ST_SampleTexel(float2 texel, float2 size)
     return SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, (texel + 0.5) / size, 0);
 }
 
-#endif // TRAIN_SPRITE_TEXEL_INCLUDED
+#endif 

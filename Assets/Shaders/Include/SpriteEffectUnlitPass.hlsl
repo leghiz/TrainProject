@@ -1,8 +1,6 @@
 #ifndef TRAIN_SPRITE_EFFECT_UNLIT_PASS_INCLUDED
 #define TRAIN_SPRITE_EFFECT_UNLIT_PASS_INCLUDED
 
-// Запасной проход UniversalForward (обычный, не 2D рендерер URP) для спрайтов со свойством.
-// Подключение — как у SpriteEffectLitPass.hlsl.
 
 struct Attributes
 {
@@ -39,4 +37,4 @@ half4 SpriteEffectUnlitFragment(Varyings input) : SV_Target
     return SpriteEffect(input.uv, input.effectPositionWS) * input.color;
 }
 
-#endif // TRAIN_SPRITE_EFFECT_UNLIT_PASS_INCLUDED
+#endif 

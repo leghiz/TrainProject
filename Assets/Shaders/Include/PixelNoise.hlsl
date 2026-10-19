@@ -1,11 +1,7 @@
 #ifndef TRAIN_PIXEL_NOISE_INCLUDED
 #define TRAIN_PIXEL_NOISE_INCLUDED
 
-// Общие функции для попиксельных эффектов вагонов и станков.
-// Всё считается в координатах текселей спрайта, поэтому узор привязан к пикселям арта
-// и остаётся чётким при любом масштабе и повороте.
 
-// Хэш 2D -> [0, 1) (Dave Hoskins, hash12)
 float PN_Hash12(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031);
@@ -13,7 +9,7 @@ float PN_Hash12(float2 p)
     return frac((p3.x + p3.y) * p3.z);
 }
 
-// Хэш 2D -> 2D в [0, 1) (Dave Hoskins, hash22)
+
 float2 PN_Hash22(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973));
@@ -21,7 +17,7 @@ float2 PN_Hash22(float2 p)
     return frac((p3.xx + p3.yz) * p3.zy);
 }
 
-// Value noise со сглаживанием между узлами сетки
+
 float PN_ValueNoise(float2 p)
 {
     float2 i = floor(p);
@@ -36,7 +32,7 @@ float PN_ValueNoise(float2 p)
     return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
 }
 
-// Три октавы value noise, результат примерно в [0, 1]
+
 float PN_Fbm(float2 p)
 {
     float value = 0.0;
@@ -51,7 +47,7 @@ float PN_Fbm(float2 p)
     return value / 0.875;
 }
 
-// Упорядоченный дизеринг Байера 4x4 по координате текселя, результат в (0, 1)
+
 float PN_Bayer4(float2 texel)
 {
     static const float bayer[16] =
@@ -70,4 +66,4 @@ half PN_Luma(half3 color)
     return dot(color, half3(0.299h, 0.587h, 0.114h));
 }
 
-#endif // TRAIN_PIXEL_NOISE_INCLUDED
+#endif 

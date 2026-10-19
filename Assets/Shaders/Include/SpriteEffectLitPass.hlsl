@@ -1,10 +1,6 @@
 #ifndef TRAIN_SPRITE_EFFECT_LIT_PASS_INCLUDED
 #define TRAIN_SPRITE_EFFECT_LIT_PASS_INCLUDED
 
-// Общий проход Universal2D для спрайтов со свойством (ржавый, новый, призрачный...).
-// До подключения: Core2D.hlsl и CBUFFER с _Color (в HLSLINCLUDE шейдера), прагмы прохода.
-// После подключения шейдер определяет half4 SpriteEffect(float2 uv, float3 positionWS) —
-// цвет текселя без тинта. positionWS — мировая позиция фрагмента (для эффектов во времени).
 
 struct Attributes
 {
@@ -56,4 +52,4 @@ half4 SpriteEffectLitFragment(Varyings input) : SV_Target
     return CombinedShapeLightShared(surfaceData, inputData);
 }
 
-#endif // TRAIN_SPRITE_EFFECT_LIT_PASS_INCLUDED
+#endif 
