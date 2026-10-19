@@ -439,6 +439,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6563bfa3a1c5b5740968b96097685814, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RideBounce
+  shaken:
+  - {fileID: 6603857809005812805}
   jointSpacing: 64
   wheelInset: 0.7
   jumpHeight: 1
