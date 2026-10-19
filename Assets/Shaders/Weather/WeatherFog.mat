@@ -29,22 +29,22 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Block: 4
-    - _Density: 0.72
+    - _Block: 1
+    - _Density: 0.517
     - _DriftSpeed: 6
     - _Intensity: 1
-    - _NoiseScale: 48
+    - _NoiseScale: 12
     - _PixelsPerUnit: 1
     - _PreviewTime: -1
-    - _Smooth: 1
-    - _Steps: 4
-    - _Variation: 0.7
-    - _WindowFog: 0.15
+    - _Smooth: 0
+    - _Steps: 6.08
+    - _Variation: 1.263
+    - _WindowFog: 0.034
     - _WindowNoise: 0.8
-    - _WindowSoftness: 0.6
+    - _WindowSoftness: 0.662
     m_Colors:
     - _FogColor: {r: 0.78, g: 0.8399999, b: 0.88, a: 1}
     - _WindowOffset: {r: 0, g: 0, b: 0, a: 0}
-    - _WindowSize: {r: 60, g: 45, b: 0, a: 0}
+    - _WindowSize: {r: 42.61, g: 40.1, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
