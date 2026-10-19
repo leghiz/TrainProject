@@ -36,7 +36,7 @@ Material:
     - _FarSpeed: 100
     - _Intensity: 1
     - _NearCellHeight: 40
-    - _NearCellWidth: 9
+    - _NearCellWidth: 16.6
     - _NearDensity: 0.55
     - _NearLength: 5
     - _NearSpeed: 170
