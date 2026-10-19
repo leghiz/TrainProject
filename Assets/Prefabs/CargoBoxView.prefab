@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3555081446911630231}
   - component: {fileID: 4106746722333408827}
+  - component: {fileID: 6271008232323501084}
   m_Layer: 0
   m_Name: CargoBoxView
   m_TagString: Untagged
@@ -137,3 +138,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CargoBoxView
   body: {fileID: 4671078234509394207}
+--- !u!114 &6271008232323501084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4908743334063957664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f159b9b0b102d5d4181cfa4f4baa8146, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoverOutline
+  target: {fileID: 4671078234509394207}
+  outlineMaterial: {fileID: 2100000, guid: d833240111fd8e34b93d3a11f985e006, type: 2}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  fadeTime: 0.08

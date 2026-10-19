@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 7913433794698091691}
   - component: {fileID: 4312287649693040418}
   - component: {fileID: 7295704829623647403}
+  - component: {fileID: 4040284981945366810}
+  - component: {fileID: 8914796376673566097}
   m_Layer: 0
   m_Name: MachineView
   m_TagString: Untagged
@@ -105,3 +107,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MachineView
   body: {fileID: 4312287649693040418}
+  idleColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+--- !u!114 &4040284981945366810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3215345748634986781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f159b9b0b102d5d4181cfa4f4baa8146, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HoverOutline
+  target: {fileID: 4312287649693040418}
+  outlineMaterial: {fileID: 2100000, guid: d833240111fd8e34b93d3a11f985e006, type: 2}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  fadeTime: 0.08
+--- !u!114 &8914796376673566097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3215345748634986781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6566e7b5eb6ed874bafecc4bef74b17f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnPop
+  duration: 0.22
+  startScale: 0.4
+  overshoot: 2.2

@@ -123,6 +123,62 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &2322562420305455074
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5886910949503708699}
+  - component: {fileID: 8824639378851616537}
+  m_Layer: 0
+  m_Name: PlacementGrid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5886910949503708699
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2322562420305455074}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4636754622870462273}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8824639378851616537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2322562420305455074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2de67f51e1c35f47829ce6b2ef3e861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlacementGridView
+  cellSprite: {fileID: 21300000, guid: 208f4b6dfcd9793438afebf81dcd4a14, type: 3}
+  material: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  sortingOrder: 3
+  hideWith: {fileID: 3080150900314599553}
+  idleColor: {r: 1, g: 1, b: 1, a: 0.22}
+  hoverColor: {r: 1, g: 1, b: 1, a: 1}
+  blockedColor: {r: 1, g: 0.35, b: 0.3, a: 0.85}
+  fadeTime: 0.15
+  stagger: 0.025
+  highlightTime: 0.08
+  hoverPop: 1.12
+  appearScale: 0.6
 --- !u!1 &3111408968510735688
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,6 +371,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4636754622870462273}
   - component: {fileID: 6784692044714187594}
+  - component: {fileID: 1249914913838381648}
   m_Layer: 0
   m_Name: WagonView
   m_TagString: Untagged
@@ -338,6 +395,7 @@ Transform:
   - {fileID: 6603857809005812805}
   - {fileID: 2100810337063150851}
   - {fileID: 4263521481053959669}
+  - {fileID: 5886910949503708699}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6784692044714187594
@@ -354,15 +412,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WagonView
   body: {fileID: 3080150900314599553}
   hpFill: {fileID: 6202769487873952233}
-  hpBar: {fileID: 6694231784921728698}
+  hpBar: {fileID: 0}
   tooltipOffset: {x: 0, y: 4}
   machinePrefab: {fileID: 7295704829623647403, guid: db277255ed0126e409e08392c891e115, type: 3}
   boxPrefab: {fileID: 4106746722333408827, guid: 3ae86082b02be8044ae3ff60c152b040, type: 3}
   cellSize: 16
   chassisHeight: 7
+  rollStartSpeed: 10
+  rollAcceleration: 40
+  onDetached:
+    m_PersistentCalls:
+      m_Calls: []
   placementPreview: {fileID: 7967276150350679469}
+  placementGrid: {fileID: 8824639378851616537}
   canPlaceColor: {r: 0.3, g: 1, b: 0.3, a: 0.45}
   cannotPlaceColor: {r: 1, g: 0.3, b: 0.3, a: 0.45}
+--- !u!114 &1249914913838381648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6149866545785083735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6563bfa3a1c5b5740968b96097685814, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RideBounce
+  jointSpacing: 64
+  wheelInset: 0.7
+  jumpHeight: 1
+  jumpLength: 8
+  sway: 1
+  swayFrequency: 0.6
 --- !u!1 &6694231784921728698
 GameObject:
   m_ObjectHideFlags: 0
@@ -378,7 +460,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2100810337063150851
 Transform:
   m_ObjectHideFlags: 0
