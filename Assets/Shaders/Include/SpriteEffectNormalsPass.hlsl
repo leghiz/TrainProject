@@ -17,11 +17,18 @@ struct Varyings
 
 #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Normals2DCommon.hlsl"
 
+#if defined(SPRITE_EFFECT_VERTEX_OFFSET)
+float3 SpriteEffectVertexOffset(float3 positionOS, float2 uv);
+#endif
+
 Varyings SpriteEffectNormalsVertex(Attributes input)
 {
     UNITY_SKINNED_VERTEX_COMPUTE(input);
     SetUpSpriteInstanceProperties();
     input.positionOS = UnityFlipSprite(input.positionOS, unity_SpriteProps.xy);
+#if defined(SPRITE_EFFECT_VERTEX_OFFSET)
+    input.positionOS += SpriteEffectVertexOffset(input.positionOS, input.uv);
+#endif
 
     Varyings o = CommonNormalsVertex(input);
     o.color = input.color * _Color * unity_SpriteColor;

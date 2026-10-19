@@ -20,11 +20,18 @@ struct Varyings
 
 half4 SpriteEffect(float2 uv, float3 positionWS);
 
+#if defined(SPRITE_EFFECT_VERTEX_OFFSET)
+float3 SpriteEffectVertexOffset(float3 positionOS, float2 uv);
+#endif
+
 Varyings SpriteEffectUnlitVertex(Attributes input)
 {
     UNITY_SKINNED_VERTEX_COMPUTE(input);
     SetUpSpriteInstanceProperties();
     input.positionOS = UnityFlipSprite(input.positionOS, unity_SpriteProps.xy);
+#if defined(SPRITE_EFFECT_VERTEX_OFFSET)
+    input.positionOS += SpriteEffectVertexOffset(input.positionOS, input.uv);
+#endif
 
     Varyings o = CommonUnlitVertex(input);
     o.color = input.color * _Color * unity_SpriteColor;
