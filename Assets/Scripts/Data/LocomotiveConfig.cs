@@ -53,4 +53,7 @@ public struct BoilerLevelSettings
 
     [Tooltip("Расход топлива: 1 дерево раз в столько секунд")]
     public float fuelInterval;
+
+    [Tooltip("Сколько слитков стоит улучшить коптильню до этого уровня (у 1-го уровня не используется)")]
+    [Min(0)] public int upgradeIngots;
 }

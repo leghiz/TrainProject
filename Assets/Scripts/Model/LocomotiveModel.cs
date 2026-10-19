@@ -40,9 +40,16 @@ public class LocomotiveModel : IMachineHost
         Boiler?.Fill(config.startFuel);
     }
 
-    public bool UpgradeBoiler()
+    public BoilerLevelSettings NextLevel => Config.boilerLevels[BoilerLevel];
+    public int UpgradeCost => CanUpgradeBoiler ? NextLevel.upgradeIngots : 0;
+
+    public bool CanAffordUpgrade(ResourceStorageModel storage) =>
+        CanUpgradeBoiler && !IsDestroyed && storage.Has(ResourceType.Ingot, UpgradeCost);
+
+    public bool TryUpgradeBoiler(ResourceStorageModel storage)
     {
-        if (!CanUpgradeBoiler) return false;
+        if (!CanAffordUpgrade(storage)) return false;
+        storage.TrySpend(ResourceType.Ingot, UpgradeCost);
         BoilerLevel++;
         ApplyBoilerLevel();
         BoilerLevelChanged?.Invoke(BoilerLevel);
