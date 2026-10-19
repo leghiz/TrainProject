@@ -2,8 +2,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
-// Стартовый скрипт игры: собирает модели и экраны из сцены и запускает забег.
-// Все настройки — в Inspector объекта Game.
 public class Game : MonoBehaviour
 {
     [Header("Настройки игры (конфиги — их можно раскрыть и менять прямо здесь)")]
@@ -59,8 +57,7 @@ public class Game : MonoBehaviour
     private MapScreenPresenter mapScreenPresenter;
     private StationScreenPresenter stationScreenPresenter;
     private DisassemblePresenter disassemblePresenter;
-
-    // Повесь на кнопку «Заново»: забег начнётся с нуля.
+    
     public void Restart() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
     private void Start()
@@ -75,14 +72,13 @@ public class Game : MonoBehaviour
         handPresenter = new HandPresenter(build, handView);
         boilerUpgradePresenter = new BoilerUpgradePresenter(locomotive, storage, trainView.Locomotive.BoilerUpgrade);
         resourcePanelPresenter = new ResourcePanelPresenter(storage, resourcePanel);
-        tooltipPresenter = new TooltipPresenter(hover, tooltipView);
 
-        // Буря стартует там, где её поставили в сцене (объект Train → Storm).
         storm = new StormModel(stormConfig, train, trainView.XToCells(stormView.transform.localPosition.x));
         stormPresenter = new StormPresenter(storm, stormView, trainView);
 
         journey = new JourneyModel(journeyConfig, train, storm, storage);
         journeyPresenter = new JourneyPresenter(journey, trainView);
+        tooltipPresenter = new TooltipPresenter(hover, tooltipView);
         mapScreenPresenter = new MapScreenPresenter(journey, mapScreen);
         stationScreenPresenter = new StationScreenPresenter(journey, stationScreen);
         disassemblePresenter = new DisassemblePresenter(cargoSelection, journey, workbench, disassembleButton);
@@ -91,7 +87,8 @@ public class Game : MonoBehaviour
 
     private void Update()
     {
-        // Крафт идёт только в пути — как и работа станков.
+        if (journey == null) return;
+        
         if (journey.State == JourneyState.Travelling) workbench.Tick(Time.deltaTime);
         journey.Tick(Time.deltaTime);
         tooltipPresenter.Tick();

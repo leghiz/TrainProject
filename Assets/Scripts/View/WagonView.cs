@@ -130,7 +130,7 @@ public class WagonView : MonoBehaviour
 
         Vector3 world = cam.ScreenToWorldPoint(mouse.position.ReadValue());
         Vector2 local = transform.InverseTransformPoint(world);
-        Vector2Int? cell = LocalToCell(local);
+        Vector2Int? cell = fogged ? null : LocalToCell(local);
 
         if (cell != HoveredCell)
         {
@@ -154,7 +154,6 @@ public class WagonView : MonoBehaviour
         if (transform.position.x + Width / 2f < screenLeft) Destroy(gameObject);
     }
 
-    // Середина верхнего края области (например, ящика) в мире — над ней появляется кнопка.
     public Vector3 AreaTop(Vector2Int cell, Vector2Int size) =>
         transform.TransformPoint(AreaCenter(cell, size) + Vector2.up * size.y * CellUnits / 2f);
 

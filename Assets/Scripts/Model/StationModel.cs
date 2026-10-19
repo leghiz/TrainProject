@@ -29,8 +29,7 @@ public class CargoOffer
 public class StationModel
 {
     public StationConfig Config { get; }
-    
-    // Посылки на выбор: взять можно только одну.
+
     private readonly List<CargoOffer> cargoOffers = new List<CargoOffer>();
     public IReadOnlyList<CargoOffer> CargoOffers => cargoOffers;
 
@@ -81,7 +80,6 @@ public class StationModel
         Changed?.Invoke();
     }
 
-    // Несколько разных случайных ящиков из пула станции; к каждому — вагончик, куда он влезает.
     private void PickCargo(StationConfig config, Random random)
     {
         if (config.cargoBoxes == null || config.cargoWagons == null) return;

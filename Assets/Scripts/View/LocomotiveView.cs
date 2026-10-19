@@ -92,6 +92,7 @@ public class LocomotiveView : MonoBehaviour
     {
         fogged = value;
         foreach (var r in GetComponentsInChildren<SpriteRenderer>(true)) r.enabled = !value;
+        if (boilerUpgrade != null) boilerUpgrade.SetBlocked(value);
     }
 
     public void SetHp(int hp, int maxHp)
@@ -162,8 +163,8 @@ public class LocomotiveView : MonoBehaviour
         if (mouse == null || cam == null) return;
 
         Vector2 world = cam.ScreenToWorldPoint(mouse.position.ReadValue());
-        bool hovered = IsOver(world, welderSlot, Vector2Int.one);
-        int? plateSlot = PlateSlotAt(world);
+        bool hovered = !fogged && IsOver(world, welderSlot, Vector2Int.one);
+        int? plateSlot = fogged ? null : PlateSlotAt(world);
 
         bool welderChanged = hovered != IsWelderSlotHovered;
         bool plateChanged = plateSlot != HoveredPlateSlot;
@@ -174,14 +175,14 @@ public class LocomotiveView : MonoBehaviour
         if (welderChanged && hovered) WelderSlotHovered?.Invoke();
         if (plateChanged && plateSlot.HasValue) PlateSlotHovered?.Invoke(plateSlot.Value);
 
-        var part = PartAt(world, hovered);
+        var part = fogged ? LocomotivePart.None : PartAt(world, hovered);
         if (part != HoveredPart)
         {
             HoveredPart = part;
             PartHovered?.Invoke(part);
         }
 
-        if (PointerOverUI.Check()) return;
+        if (fogged || PointerOverUI.Check()) return;
 
         if (mouse.leftButton.wasReleasedThisFrame)
         {

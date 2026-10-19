@@ -50,8 +50,7 @@ public class StationScreenPresenter : IDisposable
             int index = i;
             card.Clicked += () => station.Pick(index, journey.Train);
         }
-
-        // Посылки: из нескольких ящиков берётся один, ящик едет вместе со своим вагончиком.
+        
         var cargo = station.CargoOffers;
         bool showCargo = cargo.Count > 0 && !journey.Delivery.IsActive;
         view.SetCargoVisible(showCargo);
