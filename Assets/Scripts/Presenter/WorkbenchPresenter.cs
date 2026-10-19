@@ -14,6 +14,10 @@ public class WorkbenchPresenter : IDisposable
     private readonly List<(MachineConfig recipe, RecipeRowView row, Action onClick)> rows =
         new List<(MachineConfig, RecipeRowView, Action)>();
 
+    // Наведение на станок в меню — свой тултип (отдельный владелец, чтобы не путать с тултипом самого верстака).
+    private readonly object menuHover = new object();
+    private readonly List<(RecipeRowView row, Action onHover)> rowHovers = new List<(RecipeRowView, Action)>();
+
     private MachineConfig taken;
 
     public WorkbenchPresenter(WorkbenchModel model, ResourceStorageModel storage, BuildModel build,
@@ -35,7 +39,7 @@ public class WorkbenchPresenter : IDisposable
         model.ProgressChanged += OnProgressChanged;
         locomotiveView.PartHovered += OnPartHovered;
         storage.Changed += RefreshRows;
-        panel.CloseClicked += panel.Hide;
+        panel.CloseClicked += HidePanel;
         locomotiveView.WorkbenchClicked += OnWorkbenchClicked;
         locomotiveView.ReadyIconPressed += OnReadyIconPressed;
         build.SelectedChanged += OnSelectedChanged;
@@ -64,6 +68,12 @@ public class WorkbenchPresenter : IDisposable
             Action onClick = () => OnCraftClicked(recipe);
             row.Clicked += onClick;
             rows.Add((recipe, row, onClick));
+
+            var hoveredRow = row;
+            Action onHover = () => hover.Show(menuHover, () => MenuTooltip(recipe, hoveredRow), hoveredRow.IconCenter);
+            row.Hovered += onHover;
+            row.Unhovered += ClearMenuHover;
+            rowHovers.Add((row, onHover));
         }
 
         foreach (var recipe in model.Recipes)
@@ -76,17 +86,25 @@ public class WorkbenchPresenter : IDisposable
 
     private void OnWorkbenchClicked()
     {
-        if (panel.IsOpen) panel.Hide();
+        if (panel.IsOpen) HidePanel();
         else
         {
             RefreshRows();
             panel.Show();
+            UpdateReady(model.Ready);
         }
     }
-    
+
+    // Пока меню открыто, готовый станок над локомотивом не показываем — он лёг бы поверх меню.
+    private void HidePanel()
+    {
+        panel.Hide();
+        UpdateReady(model.Ready);
+    }
+
     private void OnCraftClicked(MachineConfig recipe)
     {
-        if (model.TryCraft(recipe)) panel.Hide();
+        if (model.TryCraft(recipe)) HidePanel();
     }
 
     private void OnReadyChanged(MachineConfig machine)
@@ -97,7 +115,7 @@ public class WorkbenchPresenter : IDisposable
 
     private void UpdateReady(MachineConfig machine)
     {
-        if (machine != null) locomotiveView.ShowReady(machine.sprite);
+        if (machine != null && !panel.IsOpen) locomotiveView.ShowReady(machine.sprite);
         else locomotiveView.HideReady();
     }
 
@@ -110,6 +128,8 @@ public class WorkbenchPresenter : IDisposable
     private void OnPartHovered(LocomotivePart part)
     {
         if (part == LocomotivePart.Workbench) hover.Show(this, () => TooltipTexts.Workbench(model), locomotiveView.TooltipPoint);
+        else if (part == LocomotivePart.Ready && model.HasReady)
+            hover.Show(this, () => TooltipTexts.ReadyMachine(model.Ready, model.ReadyTrait), locomotiveView.ReadyIconCenter);
         else hover.Clear(this);
     }
 
@@ -145,7 +165,7 @@ public class WorkbenchPresenter : IDisposable
         locomotiveView.PartHovered -= OnPartHovered;
         hover.Clear(this);
         storage.Changed -= RefreshRows;
-        panel.CloseClicked -= panel.Hide;
+        panel.CloseClicked -= HidePanel;
         locomotiveView.WorkbenchClicked -= OnWorkbenchClicked;
         locomotiveView.ReadyIconPressed -= OnReadyIconPressed;
         build.SelectedChanged -= OnSelectedChanged;
@@ -153,5 +173,23 @@ public class WorkbenchPresenter : IDisposable
 
         foreach (var entry in rows) entry.row.Clicked -= entry.onClick;
         rows.Clear();
+        foreach (var entry in rowHovers)
+        {
+            entry.row.Hovered -= entry.onHover;
+            entry.row.Unhovered -= ClearMenuHover;
+        }
+        rowHovers.Clear();
+        ClearMenuHover();
+    }
+
+    private void ClearMenuHover() => hover.Clear(menuHover);
+
+    // В меню тултип станка встаёт справа от него, чтобы не налезать на соседние строки.
+    private static TooltipContent MenuTooltip(MachineConfig recipe, RecipeRowView row)
+    {
+        var content = TooltipTexts.ReadyMachine(recipe, null);
+        content.Beside = true;
+        content.Size = row.IconSize;
+        return content;
     }
 }

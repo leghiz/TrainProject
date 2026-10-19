@@ -1,13 +1,13 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-// Панель ресурсов лежит в Canvas: числа и надписи/иконки геймдиз расставляет как хочет.
+// Панель ресурсов: числа и надписи/иконки геймдиз расставляет как хочет.
 public class ResourcePanelView : MonoBehaviour
 {
     [Tooltip("Куда писать количество. Любое поле можно оставить пустым")]
-    [SerializeField] private Text woodAmount;
-    [SerializeField] private Text scrapAmount;
-    [SerializeField] private Text ingotAmount;
+    [SerializeField] private TMP_Text woodAmount;
+    [SerializeField] private TMP_Text scrapAmount;
+    [SerializeField] private TMP_Text ingotAmount;
 
     public void Set(int wood, int scrap, int ingots)
     {
