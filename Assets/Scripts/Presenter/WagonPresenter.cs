@@ -10,12 +10,14 @@ public class WagonPresenter : IDisposable
     private readonly ResourceStorageModel storage;
     private readonly HoverModel hover;
     private readonly CargoSelectionModel cargoSelection;
+    private readonly DismantleModel dismantle;
+    private object dismantleTarget;
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
 
     public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage,
-                          HoverModel hover, CargoSelectionModel cargoSelection)
+                          HoverModel hover, CargoSelectionModel cargoSelection, DismantleModel dismantle)
     {
         this.model = model;
         this.view = view;
@@ -23,6 +25,7 @@ public class WagonPresenter : IDisposable
         this.storage = storage;
         this.hover = hover;
         this.cargoSelection = cargoSelection;
+        this.dismantle = dismantle;
 
         view.SetSprite(model.Config.sprite);
         view.SetGridSize(model.Config.size);
@@ -42,12 +45,49 @@ public class WagonPresenter : IDisposable
         view.HoverExited += view.HidePlacementPreview;
         view.HoverExited += ClearHover;
         view.CellReleased += OnCellReleased;
+        view.CellRightPressed += OnCellRightPressed;
+        view.CellHovered += CancelDismantleIfMovedAway;
+        view.HoverExited += CancelDismantle;
         build.SelectedChanged += OnSelectedChanged;
+    }
+
+    // Удержание ПКМ над станком или ящиком с пустой рукой — разборка (ПКМ с предметом в руке — это отмена).
+    private void OnCellRightPressed(Vector2Int cell)
+    {
+        if (build.Selected != null) return;
+        var machine = model.GetMachineAt(cell);
+        var box = model.GetBoxAt(cell);
+        if (machine != null)
+        {
+            dismantleTarget = machine;
+            dismantle.Begin(this, () => model.Dismantle(machine, storage));
+        }
+        else if (box != null)
+        {
+            dismantleTarget = box;
+            dismantle.Begin(this, () => cargoSelection.Select(box, view.AreaTop(box.Cell, box.Config.size)));
+        }
+    }
+
+    private void CancelDismantleIfMovedAway(Vector2Int cell)
+    {
+        object under = (object)model.GetMachineAt(cell) ?? model.GetBoxAt(cell);
+        if (under != dismantleTarget) CancelDismantle();
+    }
+
+    private void CancelDismantle()
+    {
+        dismantleTarget = null;
+        dismantle.Cancel(this);
     }
 
     private void UpdateHp(int hp) => view.SetHp((float)hp / model.Config.maxHp);
 
-    private void OnDestroyed() => ClearHover();
+    private void OnDestroyed()
+    {
+        ClearHover();
+        CancelDismantle();
+    }
 
     private void UpdateHover(Vector2Int cell)
     {
@@ -109,9 +149,7 @@ public class WagonPresenter : IDisposable
         var machine = build.Selected;
         if (machine == null)
         {
-            var box = model.GetBoxAt(cell);
-            if (box != null) cargoSelection.Select(box, view.AreaTop(box.Cell, box.Config.size));
-            else LoadMachineAt(cell);
+            LoadMachineAt(cell);
             return;
         }
         if (model.TryPlace(machine, cell, build.SelectedTrait)) build.Select(null);
@@ -142,8 +180,12 @@ public class WagonPresenter : IDisposable
         view.HoverExited -= view.HidePlacementPreview;
         view.HoverExited -= ClearHover;
         view.CellReleased -= OnCellReleased;
+        view.CellRightPressed -= OnCellRightPressed;
+        view.CellHovered -= CancelDismantleIfMovedAway;
+        view.HoverExited -= CancelDismantle;
         build.SelectedChanged -= OnSelectedChanged;
         ClearHover();
+        CancelDismantle();
 
         foreach (var entry in machines.Values) entry.presenter.Dispose();
         machines.Clear();

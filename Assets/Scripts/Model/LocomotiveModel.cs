@@ -98,6 +98,17 @@ public class LocomotiveModel : IMachineHost
         !IsDestroyed && Welder == null && machine != null
         && machine.action == MachineAction.Repair && machine.size == Vector2Int.one;
 
+    // Разобрали Сварочный в локомотиве: слот свободен, половина цены — на склад.
+    public bool DismantleWelder(ResourceStorageModel storage)
+    {
+        if (Welder == null) return false;
+        var removed = Welder;
+        Welder = null;
+        MachineRemoved?.Invoke(removed);
+        MachineRefund.GiveHalf(removed.Config, storage);
+        return true;
+    }
+
     public bool TryPlaceWelder(MachineConfig machine, MachineTrait trait = null)
     {
         if (!CanPlaceWelder(machine)) return false;

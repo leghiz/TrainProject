@@ -162,6 +162,15 @@ public class WagonModel : IMachineHost
         }
     }
     
+    // Игрок разобрал станок: он снимается, на склад возвращается половина его цены.
+    public bool Dismantle(MachineModel machine, ResourceStorageModel storage)
+    {
+        if (!machines.Contains(machine)) return false;
+        RemoveMachine(machine);
+        MachineRefund.GiveHalf(machine.Config, storage);
+        return true;
+    }
+
     private void RemoveMachine(MachineModel machine)
     {
         for (int x = 0; x < machine.Config.size.x; x++)

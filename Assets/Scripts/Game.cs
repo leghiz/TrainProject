@@ -21,7 +21,10 @@ public class Game : MonoBehaviour
     [SerializeField] private StormView stormView;
     [SerializeField] private HandView handView;
     [SerializeField] private TooltipView tooltipView;
-    [SerializeField] private WorldButtonView disassembleButton;
+
+    [Header("Разборка (удержание ПКМ над станком или ящиком)")]
+    [Tooltip("Сколько секунд держать ПКМ, чтобы разобрать")]
+    [SerializeField, Min(0f)] private float dismantleHoldSeconds = 1f;
 
     [Header("Интерфейс (Canvas)")]
     [SerializeField] private ResourcePanelView resourcePanel;
@@ -57,19 +60,25 @@ public class Game : MonoBehaviour
     private MapScreenPresenter mapScreenPresenter;
     private StationScreenPresenter stationScreenPresenter;
     private DisassemblePresenter disassemblePresenter;
-    
+    private DismantlePresenter dismantlePresenter;
+
+    // Удержание ПКМ: IsActive, Progress (0..1) и событие Changed — для кружка прогресса.
+    public DismantleModel Dismantle { get; private set; }
+
     public void Restart() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
     private void Start()
     {
+        Dismantle = new DismantleModel(dismantleHoldSeconds);
         locomotive = new LocomotiveModel(locomotiveConfig);
         train = new TrainModel(locomotive);
-        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover, cargoSelection);
+        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover, cargoSelection, Dismantle);
         AttachStartWagon();
 
         workbench = new WorkbenchModel(locomotiveConfig.recipes, storage);
         workbenchPresenter = new WorkbenchPresenter(workbench, storage, build, trainView.Locomotive, workbenchPanel, hover);
         handPresenter = new HandPresenter(build, handView);
+        dismantlePresenter = new DismantlePresenter(Dismantle, handView);
         boilerUpgradePresenter = new BoilerUpgradePresenter(locomotive, storage, trainView.Locomotive.BoilerUpgrade);
         resourcePanelPresenter = new ResourcePanelPresenter(storage, resourcePanel);
 
@@ -81,7 +90,7 @@ public class Game : MonoBehaviour
         tooltipPresenter = new TooltipPresenter(hover, tooltipView);
         mapScreenPresenter = new MapScreenPresenter(journey, mapScreen);
         stationScreenPresenter = new StationScreenPresenter(journey, stationScreen);
-        disassemblePresenter = new DisassemblePresenter(cargoSelection, journey, workbench, disassembleButton);
+        disassemblePresenter = new DisassemblePresenter(cargoSelection, journey, workbench);
         journey.StateChanged += OnStateChanged;
     }
 
@@ -91,6 +100,7 @@ public class Game : MonoBehaviour
         
         if (journey.State == JourneyState.Travelling) workbench.Tick(Time.deltaTime);
         journey.Tick(Time.deltaTime);
+        Dismantle.Tick(Time.deltaTime);
         tooltipPresenter.Tick();
     }
 
@@ -115,6 +125,7 @@ public class Game : MonoBehaviour
     {
         if (journey != null) journey.StateChanged -= OnStateChanged;
         disassemblePresenter?.Dispose();
+        dismantlePresenter?.Dispose();
         stationScreenPresenter?.Dispose();
         mapScreenPresenter?.Dispose();
         tooltipPresenter?.Dispose();

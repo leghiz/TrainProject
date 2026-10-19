@@ -1,62 +1,31 @@
 using System;
 
+// Удержали ПКМ над ящиком посылки до конца → посылка провалена,
+// а станок со случайным свойством появляется над локомотивом, как скрафченный.
 public class DisassemblePresenter : IDisposable
 {
     private readonly CargoSelectionModel selection;
     private readonly JourneyModel journey;
     private readonly WorkbenchModel workbench;
-    private readonly WorldButtonView button;
 
-    public DisassemblePresenter(CargoSelectionModel selection, JourneyModel journey, WorkbenchModel workbench, WorldButtonView button)
+    public DisassemblePresenter(CargoSelectionModel selection, JourneyModel journey, WorkbenchModel workbench)
     {
         this.selection = selection;
         this.journey = journey;
         this.workbench = workbench;
-        this.button = button;
 
-        button.Hide();
-        selection.Changed += Refresh;
-        workbench.ReadyChanged += OnReadyChanged;
-        button.Clicked += OnClicked;
-        button.PressedOutside += selection.Clear;
-        journey.Delivery.Failed += OnDeliveryEnded;
-        journey.Delivery.Delivered += OnDeliveryEnded;
+        selection.Changed += OnSelected;
     }
 
-    private void Refresh()
+    private void OnSelected()
     {
         var box = selection.Box;
-        if (box == null || box != journey.Delivery.Box)
-        {
-            button.Hide();
-            return;
-        }
-        button.ShowAt(selection.Anchor, "Разобрать", !workbench.HasReady);
-    }
-
-    private void OnReadyChanged(MachineConfig machine)
-    {
-        if (selection.Box != null) button.SetInteractable(!workbench.HasReady);
-    }
-
-    private void OnClicked()
-    {
-        if (workbench.HasReady) return;
-        if (journey.DisassembleCargo(out var machine, out var trait)) workbench.TryGive(machine, trait);
+        if (box == null) return;
         selection.Clear();
+        // Над локомотивом уже висит готовый станок — новый положить некуда, сначала забери тот.
+        if (box != journey.Delivery.Box || workbench.HasReady) return;
+        if (journey.DisassembleCargo(out var machine, out var trait)) workbench.TryGive(machine, trait);
     }
 
-    private void OnDeliveryEnded(string reason) => selection.Clear();
-
-    private void OnDeliveryEnded(int ingots) => selection.Clear();
-
-    public void Dispose()
-    {
-        selection.Changed -= Refresh;
-        workbench.ReadyChanged -= OnReadyChanged;
-        button.Clicked -= OnClicked;
-        button.PressedOutside -= selection.Clear;
-        journey.Delivery.Failed -= OnDeliveryEnded;
-        journey.Delivery.Delivered -= OnDeliveryEnded;
-    }
+    public void Dispose() => selection.Changed -= OnSelected;
 }

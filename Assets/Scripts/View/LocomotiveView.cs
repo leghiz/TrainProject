@@ -75,6 +75,7 @@ public class LocomotiveView : MonoBehaviour
     public event Action PlateSlotExited;
     public event Action<int> PlateSlotReleased;
     public event Action<LocomotivePart> PartHovered;
+    public event Action<LocomotivePart> PartRightPressed;
 
     public bool IsWelderSlotHovered { get; private set; }
     public int? HoveredPlateSlot { get; private set; }
@@ -183,6 +184,8 @@ public class LocomotiveView : MonoBehaviour
         }
 
         if (fogged || PointerOverUI.Check()) return;
+
+        if (mouse.rightButton.wasPressedThisFrame && part != LocomotivePart.None) PartRightPressed?.Invoke(part);
 
         if (mouse.leftButton.wasReleasedThisFrame)
         {

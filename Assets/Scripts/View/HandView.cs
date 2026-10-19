@@ -8,6 +8,7 @@ public class HandView : MonoBehaviour
 
     public event Action Released;
     public event Action CancelPressed;
+    public event Action RightReleased;
 
     public void Show(Sprite sprite)
     {
@@ -27,6 +28,7 @@ public class HandView : MonoBehaviour
         ghost.transform.position = new Vector3(world.x, world.y, 0f);
 
         if (mouse.rightButton.wasPressedThisFrame) CancelPressed?.Invoke();
+        if (mouse.rightButton.wasReleasedThisFrame) RightReleased?.Invoke();
         if (mouse.leftButton.wasReleasedThisFrame) Released?.Invoke();
     }
 }

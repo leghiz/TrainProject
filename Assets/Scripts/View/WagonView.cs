@@ -43,6 +43,7 @@ public class WagonView : MonoBehaviour
     public event Action<Vector2Int> CellHovered; 
     public event Action HoverExited; 
     public event Action<Vector2Int> CellReleased;
+    public event Action<Vector2Int> CellRightPressed;
 
     public Vector2Int? HoveredCell { get; private set; } 
 
@@ -141,6 +142,7 @@ public class WagonView : MonoBehaviour
         }
 
         if (cell.HasValue && mouse.leftButton.wasReleasedThisFrame && !PointerOverUI.Check()) CellReleased?.Invoke(cell.Value);
+        if (cell.HasValue && mouse.rightButton.wasPressedThisFrame && !PointerOverUI.Check()) CellRightPressed?.Invoke(cell.Value);
     }
     
     private void Roll()
