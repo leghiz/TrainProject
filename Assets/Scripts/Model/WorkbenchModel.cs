@@ -5,6 +5,7 @@ public class WorkbenchModel
 {
     public IReadOnlyList<MachineConfig> Recipes { get; }
     public MachineConfig Ready { get; private set; }
+    public MachineTrait ReadyTrait { get; private set; }
     public bool HasReady => Ready != null;
     
     public MachineConfig InProgress { get; private set; }
@@ -54,18 +55,27 @@ public class WorkbenchModel
         TryFinish();
     }
 
-    public MachineConfig Take()
+    public MachineConfig Take(out MachineTrait trait)
     {
         var machine = Ready;
-        if (machine != null) SetReady(null);
+        trait = ReadyTrait;
+        if (machine != null) SetReady(null, null);
         TryFinish();
         return machine;
     }
 
-    public void PutBack(MachineConfig machine)
+    public void PutBack(MachineConfig machine, MachineTrait trait)
     {
         if (machine == null || HasReady) return;
-        SetReady(machine);
+        SetReady(machine, trait);
+    }
+
+    // Станок со стороны (из разобранного ящика) встаёт туда же, где появляются скрафченные.
+    public bool TryGive(MachineConfig machine, MachineTrait trait)
+    {
+        if (machine == null || HasReady) return false;
+        SetReady(machine, trait);
+        return true;
     }
 
     public bool IsRecipe(MachineConfig machine)
@@ -81,12 +91,13 @@ public class WorkbenchModel
         var machine = InProgress;
         InProgress = null;
         ProgressChanged?.Invoke();
-        SetReady(machine);
+        SetReady(machine, null);
     }
 
-    private void SetReady(MachineConfig machine)
+    private void SetReady(MachineConfig machine, MachineTrait trait)
     {
         Ready = machine;
+        ReadyTrait = machine != null ? trait : null;
         ReadyChanged?.Invoke(machine);
     }
 }

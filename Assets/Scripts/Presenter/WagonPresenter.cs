@@ -9,17 +9,20 @@ public class WagonPresenter : IDisposable
     private readonly BuildModel build;
     private readonly ResourceStorageModel storage;
     private readonly HoverModel hover;
+    private readonly CargoSelectionModel cargoSelection;
     private readonly Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)> machines =
         new Dictionary<MachineModel, (MachinePresenter presenter, MachineView view)>();
     private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
 
-    public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage, HoverModel hover)
+    public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage,
+                          HoverModel hover, CargoSelectionModel cargoSelection)
     {
         this.model = model;
         this.view = view;
         this.build = build;
         this.storage = storage;
         this.hover = hover;
+        this.cargoSelection = cargoSelection;
 
         view.SetSprite(model.Config.sprite);
         view.SetGridSize(model.Config.size);
@@ -106,7 +109,9 @@ public class WagonPresenter : IDisposable
         var machine = build.Selected;
         if (machine == null)
         {
-            LoadMachineAt(cell);
+            var box = model.GetBoxAt(cell);
+            if (box != null) cargoSelection.Select(box, view.AreaTop(box.Cell, box.Config.size));
+            else LoadMachineAt(cell);
             return;
         }
         if (model.TryPlace(machine, cell, build.SelectedTrait)) build.Select(null);

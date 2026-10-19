@@ -68,11 +68,12 @@ public class JourneyModel
         return false;
     }
     
-    public bool AcceptCargo()
+    public bool AcceptCargo(int index)
     {
-        if (State != JourneyState.Station || Delivery.IsActive) return false;
-        var offer = CurrentStation?.Cargo;
-        if (offer == null) return false;
+        if (State != JourneyState.Station || Delivery.IsActive || CurrentStation == null) return false;
+        var offers = CurrentStation.CargoOffers;
+        if (index < 0 || index >= offers.Count) return false;
+        var offer = offers[index];
 
         var wagon = new WagonModel(offer.Wagon);
         Train.Attach(wagon);

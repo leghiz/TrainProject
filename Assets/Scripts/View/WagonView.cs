@@ -154,6 +154,10 @@ public class WagonView : MonoBehaviour
         if (transform.position.x + Width / 2f < screenLeft) Destroy(gameObject);
     }
 
+    // Середина верхнего края области (например, ящика) в мире — над ней появляется кнопка.
+    public Vector3 AreaTop(Vector2Int cell, Vector2Int size) =>
+        transform.TransformPoint(AreaCenter(cell, size) + Vector2.up * size.y * CellUnits / 2f);
+
     public Vector2 CellToLocal(Vector2Int cell) => GridOrigin + (Vector2)cell * CellUnits;
     
     private Vector2Int? LocalToCell(Vector2 local)
