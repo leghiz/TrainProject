@@ -16,18 +16,32 @@ public class BoilerUpgradeView : MonoBehaviour
 
     private bool interactable;
     private bool blocked;
+    private bool wanted = true;
+    private bool suppressed;
     
     public void SetBlocked(bool value) => blocked = value;
 
+    // Пока открыто меню коптильни, кнопка прячется: она лежит там же, где полоска дров.
+    public void SetSuppressed(bool value)
+    {
+        suppressed = value;
+        gameObject.SetActive(wanted && !suppressed);
+    }
+
     public void Set(string cost, bool canUpgrade)
     {
-        gameObject.SetActive(true);
+        wanted = true;
+        gameObject.SetActive(!suppressed);
         if (costText != null) costText.text = cost;
         interactable = canUpgrade;
         background.color = canUpgrade ? availableColor : unavailableColor;
     }
 
-    public void Hide() => gameObject.SetActive(false);
+    public void Hide()
+    {
+        wanted = false;
+        gameObject.SetActive(false);
+    }
 
     private void Update()
     {
