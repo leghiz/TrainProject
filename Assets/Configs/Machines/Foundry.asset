@@ -18,6 +18,7 @@ MonoBehaviour:
   craftWood: 5
   craftScrap: 5
   craftIngots: 0
+  craftTime: 10
   action: 2
   workInterval: 3
   resource: 1

@@ -9,6 +9,7 @@ public class WorkbenchPresenter : IDisposable
     private readonly BuildModel build;
     private readonly LocomotiveView locomotiveView;
     private readonly WorkbenchPanelView panel;
+    private readonly HoverModel hover;
 
     private readonly List<(MachineConfig recipe, RecipeRowView row, Action onClick)> rows =
         new List<(MachineConfig, RecipeRowView, Action)>();
@@ -16,20 +17,23 @@ public class WorkbenchPresenter : IDisposable
     private MachineConfig taken;
 
     public WorkbenchPresenter(WorkbenchModel model, ResourceStorageModel storage, BuildModel build,
-                              LocomotiveView locomotiveView, WorkbenchPanelView panel)
+                              LocomotiveView locomotiveView, WorkbenchPanelView panel, HoverModel hover)
     {
         this.model = model;
         this.storage = storage;
         this.build = build;
         this.locomotiveView = locomotiveView;
         this.panel = panel;
+        this.hover = hover;
 
         BindRows();
         panel.Hide();
         UpdateReady(model.Ready);
-        RefreshRows();
+        OnProgressChanged();
 
         model.ReadyChanged += OnReadyChanged;
+        model.ProgressChanged += OnProgressChanged;
+        locomotiveView.PartHovered += OnPartHovered;
         storage.Changed += RefreshRows;
         panel.CloseClicked += panel.Hide;
         locomotiveView.WorkbenchClicked += OnWorkbenchClicked;
@@ -97,6 +101,18 @@ public class WorkbenchPresenter : IDisposable
         else locomotiveView.HideReady();
     }
 
+    private void OnProgressChanged()
+    {
+        locomotiveView.SetCraftProgress(model.IsCrafting ? model.Progress : (float?)null);
+        RefreshRows();
+    }
+    
+    private void OnPartHovered(LocomotivePart part)
+    {
+        if (part == LocomotivePart.Workbench) hover.Show(this, () => TooltipTexts.Workbench(model), locomotiveView.TooltipPoint);
+        else hover.Clear(this);
+    }
+
     private void RefreshRows()
     {
         foreach (var entry in rows) entry.row.SetInteractable(model.CanCraft(entry.recipe));
@@ -125,6 +141,9 @@ public class WorkbenchPresenter : IDisposable
     public void Dispose()
     {
         model.ReadyChanged -= OnReadyChanged;
+        model.ProgressChanged -= OnProgressChanged;
+        locomotiveView.PartHovered -= OnPartHovered;
+        hover.Clear(this);
         storage.Changed -= RefreshRows;
         panel.CloseClicked -= panel.Hide;
         locomotiveView.WorkbenchClicked -= OnWorkbenchClicked;

@@ -1,3 +1,4 @@
+using UnityEngine;
 
 public static class TooltipTexts
 {
@@ -6,6 +7,16 @@ public static class TooltipTexts
         Title = wagon.Config.displayName + (wagon.Condition != null ? $" ({wagon.Condition.displayName})" : ""),
         Info = $"дерево {wagon.Wood}, лом {wagon.Scrap}"
     };
+
+    public static TooltipContent Workbench(WorkbenchModel workbench)
+    {
+        string info;
+        if (workbench.IsCrafting)
+            info = $"делает: {workbench.InProgress.displayName}\nосталось {Mathf.CeilToInt(workbench.TimeLeft)} с (только в пути)";
+        else if (workbench.HasReady) info = $"готов: {workbench.Ready.displayName}\nтащи его на вагон";
+        else info = "клик — меню крафта";
+        return new TooltipContent { Title = "Верстак", Info = info };
+    }
 
     public static TooltipContent Boiler(LocomotiveModel locomotive)
     {

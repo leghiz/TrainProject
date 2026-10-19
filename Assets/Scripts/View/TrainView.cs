@@ -30,7 +30,7 @@ public class TrainView : MonoBehaviour
     public void RemoveWagon(WagonView wagon)
     {
         wagons.Remove(wagon);
-        Destroy(wagon.gameObject);
+        wagon.RollAway();
     }
     
     public void Arrange()

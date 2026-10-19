@@ -44,13 +44,8 @@ public class WagonPresenter : IDisposable
 
     private void UpdateHp(int hp) => view.SetHp((float)hp / model.Config.maxHp);
 
-    private void OnDestroyed()
-    {
-        ClearHover();
-        view.ShowDestroyed();
-    }
+    private void OnDestroyed() => ClearHover();
 
-    // Под курсором станок, ящик или пустая клетка — тултип про то, что там лежит.
     private void UpdateHover(Vector2Int cell)
     {
         Vector3 anchor = view.TooltipPoint;

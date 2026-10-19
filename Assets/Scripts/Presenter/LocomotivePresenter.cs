@@ -57,8 +57,6 @@ public class LocomotivePresenter : IDisposable
         {
             case LocomotivePart.Boiler when model.Boiler != null:
                 hover.Show(this, () => TooltipTexts.Boiler(model), anchor); break;
-            case LocomotivePart.Workbench when model.Workbench != null:
-                hover.Show(this, () => TooltipTexts.Machine(model.Workbench, false), anchor); break;
             case LocomotivePart.Welder when model.Welder != null:
                 var welder = model.Welder;
                 hover.Show(this, () => TooltipTexts.Machine(welder, false), anchor); break;

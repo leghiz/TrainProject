@@ -15,6 +15,8 @@ public class MachineConfig : ScriptableObject
     [Min(0)] public int craftWood;
     [Min(0)] public int craftScrap;
     [Min(0)] public int craftIngots;
+    [Tooltip("Сколько секунд верстак делает этот станок (время идёт только в пути). 0 — сразу")]
+    [Min(0f)] public float craftTime = 5f;
 
     [Header("Работа")]
     [Tooltip("Что станок делает при срабатывании")]
