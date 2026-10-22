@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Карта маршрута. Станции стоят на трёх дорожках (ряд — из модели), дороги идут прямо или по диагонали
+// на соседнюю дорожку. Клик по доступной станции — ехать туда, при наведении над ней всплывает погода по дороге.
+// Что дальше доступных станций — неизвестно: там знак вопроса (кроме Конечной и Грузовой, куда везём посылку).
 public class MapScreenPresenter : IDisposable
 {
     private readonly JourneyModel journey;
@@ -21,32 +24,20 @@ public class MapScreenPresenter : IDisposable
 
     private void Build()
     {
-        var columns = journey.Map.Columns;
-        var positions = new Dictionary<MapNode, Vector2>();
-        for (int c = 0; c < columns.Count; c++)
-        {
-            float x = columns.Count > 1 ? (float)c / (columns.Count - 1) : 0.5f;
-            var column = columns[c];
-            for (int r = 0; r < column.Count; r++)
-                positions[column[r]] = new Vector2(x, (r + 1f) / (column.Count + 1f));
-        }
+        var cells = new Dictionary<MapNode, Vector2Int>();
+        foreach (var column in journey.Map.Columns)
+            foreach (var node in column)
+                cells[node] = new Vector2Int(node.Column, node.Row);
 
-        foreach (var column in columns)
+        foreach (var column in journey.Map.Columns)
             foreach (var node in column)
                 foreach (var next in node.Next)
-                {
-                    Vector2 from = positions[node], to = positions[next];
-                    view.AddLine(from, to);
-                    var events = node.EventsTo(next);
-                    for (int i = 0; i < events.Count; i++)
-                        view.AddEvent(Vector2.Lerp(from, to, (i + 1f) / (events.Count + 1f)))
-                            .Setup(events[i].icon, events[i].displayName);
-                }
+                    view.AddRoad(cells[node], cells[next]);
 
-        foreach (var column in columns)
+        foreach (var column in journey.Map.Columns)
             foreach (var node in column)
             {
-                var nodeView = view.AddNode(positions[node]);
+                var nodeView = view.AddNode(cells[node]);
                 var target = node;
                 Action onClick = () => journey.Travel(target);
                 nodeView.Clicked += onClick;
@@ -62,14 +53,36 @@ public class MapScreenPresenter : IDisposable
             return;
         }
         view.Show();
-        
+
         var map = journey.Map;
         foreach (var entry in nodes)
         {
             var station = entry.node.Station;
-            entry.view.SetStation(station != null ? station.icon : null, station != null ? station.displayName : "Старт");
-            entry.view.SetState(StateOf(entry.node, map));
+            var icon = station == null ? view.StartIcon : station.icon != null ? station.icon : view.UnknownIcon;
+            entry.view.SetStation(icon, station != null ? station.displayName : "Start");
+            var nodeState = StateOf(entry.node, map);
+            entry.view.SetState(nodeState);
+            entry.view.SetUnknown(!IsKnown(entry.node, nodeState));
+            entry.view.SetEvents(nodeState == MapNodeState.Available ? EventIcons(map.Current, entry.node) : null);
+            if (nodeState == MapNodeState.Current) view.SetCurrent(entry.view);
         }
+    }
+
+    // Видно то, что уже позади или рядом, куда можно ехать; Конечную знают все, а Грузовую-получатель — пока везём посылку.
+    private bool IsKnown(MapNode node, MapNodeState state)
+    {
+        if (state != MapNodeState.Locked) return true;
+        if (node.Column == journey.Map.Columns.Count - 1) return true;
+        var delivery = journey.Delivery;
+        return delivery.IsActive && node.Column == delivery.DestinationColumn && node.Station == journey.Config.deliveryStation;
+    }
+
+    private static List<Sprite> EventIcons(MapNode from, MapNode to)
+    {
+        var icons = new List<Sprite>();
+        foreach (var travelEvent in from.EventsTo(to))
+            if (travelEvent != null && travelEvent.icon != null) icons.Add(travelEvent.icon);
+        return icons;
     }
 
     private static MapNodeState StateOf(MapNode node, MapModel map)

@@ -68,6 +68,11 @@ public class MapModel
         return true;
     }
 
+    // Карта — три дорожки (ряды -1, 0, 1). В каждом столбце станции на двух или трёх из них.
+    // Дороги идут прямо или на соседнюю дорожку, не пересекаются; изредка добавляется съезд на соседнюю,
+    // поэтому ветки то расходятся, то сходятся, и выбор дорожки что-то значит.
+    private const int Lanes = 3;
+
     private void Generate(JourneyConfig config, Random random)
     {
         for (int c = 0; c <= config.nodeCount; c++)
@@ -79,13 +84,19 @@ public class MapModel
             {
                 int min = Math.Max(1, config.minNodesPerColumn);
                 int max = Math.Max(min, config.maxNodesPerColumn);
-                int count = random.Next(min, max + 1);
-                for (int r = 0; r < count; r++) column.Add(new MapNode(c, r, PickStation(config, random)));
+                int count = Math.Min(Lanes, random.Next(min, max + 1));
+                bool cargo = config.cargoColumns != null && Array.IndexOf(config.cargoColumns, c) >= 0 && config.deliveryStation != null;
+                foreach (int row in PickRows(count, random))
+                    column.Add(new MapNode(c, row, cargo ? config.deliveryStation : PickStation(config, random)));
             }
             columns.Add(column);
         }
 
-        for (int c = 0; c < columns.Count - 1; c++) Link(columns[c], columns[c + 1], random);
+        for (int c = 0; c < columns.Count - 1; c++)
+        {
+            Link(columns[c], columns[c + 1], random);
+            AddCrossRoad(columns[c], columns[c + 1], random, config.extraRoadChance);
+        }
         
         foreach (var column in columns)
             foreach (var node in column)
@@ -94,6 +105,13 @@ public class MapModel
                     if (node.Station != null) RollEvents(node, next, node.Station.eventsOnWayFromHere, random);
                     if (next.Station != null) RollEvents(node, next, next.Station.eventsOnWayHere, random);
                 }
+    }
+
+    private static List<int> PickRows(int count, Random random)
+    {
+        var rows = new List<int> { -1, 0, 1 };
+        while (rows.Count > count) rows.RemoveAt(random.Next(rows.Count));
+        return rows;
     }
 
     private static void RollEvents(MapNode from, MapNode to, EventChance[] chances, Random random)
@@ -106,22 +124,67 @@ public class MapModel
         }
     }
     
+    // Каждая станция ведёт дальше по своей дорожке, а если там пусто — на ближайшую соседнюю;
+    // в каждую станцию следующего столбца приходит хотя бы одна дорога.
     private static void Link(List<MapNode> from, List<MapNode> to, Random random)
     {
-        int i = 0, j = 0;
-        from[i].Next.Add(to[j]);
-        while (i < from.Count - 1 || j < to.Count - 1)
+        foreach (var node in from)
         {
-            if (i == from.Count - 1) j++;
-            else if (j == to.Count - 1) i++;
-            else
-            {
-                int step = random.Next(3); 
-                if (step != 1) i++;
-                if (step != 0) j++;
-            }
-            if (!from[i].Next.Contains(to[j])) from[i].Next.Add(to[j]);
+            var target = Nearest(to, node.Row, random);
+            if (target != null && !node.Next.Contains(target)) node.Next.Add(target);
         }
+        foreach (var next in to)
+        {
+            if (HasIncoming(from, next)) continue;
+            var sources = new List<MapNode>(from);
+            sources.Sort((a, b) => Math.Abs(a.Row - next.Row).CompareTo(Math.Abs(b.Row - next.Row)));
+            var source = sources.Find(candidate => !Crosses(from, candidate, next));
+            (source ?? sources[0]).Next.Add(next);
+        }
+    }
+
+    private static MapNode Nearest(List<MapNode> nodes, int row, Random random)
+    {
+        MapNode best = null;
+        int bestDistance = int.MaxValue;
+        foreach (var node in nodes)
+        {
+            int distance = Math.Abs(node.Row - row);
+            if (distance < bestDistance || (distance == bestDistance && random.Next(2) == 0))
+            {
+                best = node;
+                bestDistance = distance;
+            }
+        }
+        return best;
+    }
+
+    private static bool HasIncoming(List<MapNode> from, MapNode node)
+    {
+        foreach (var source in from)
+            if (source.Next.Contains(node)) return true;
+        return false;
+    }
+
+    // Иногда (шанс из конфига) — один съезд на соседнюю дорожку между этими столбцами, если он ничего не пересекает.
+    private static void AddCrossRoad(List<MapNode> from, List<MapNode> to, Random random, double chance)
+    {
+        if (random.NextDouble() >= chance) return;
+        var candidates = new List<(MapNode from, MapNode to)>();
+        foreach (var a in from)
+            foreach (var b in to)
+                if (Math.Abs(a.Row - b.Row) == 1 && !a.Next.Contains(b) && !Crosses(from, a, b)) candidates.Add((a, b));
+        if (candidates.Count == 0) return;
+        var pick = candidates[random.Next(candidates.Count)];
+        pick.from.Next.Add(pick.to);
+    }
+
+    private static bool Crosses(List<MapNode> from, MapNode a, MapNode b)
+    {
+        foreach (var other in from)
+            foreach (var next in other.Next)
+                if ((other.Row < a.Row && next.Row > b.Row) || (other.Row > a.Row && next.Row < b.Row)) return true;
+        return false;
     }
 
     private static StationConfig PickStation(JourneyConfig config, Random random)
