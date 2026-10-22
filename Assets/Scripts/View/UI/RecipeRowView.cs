@@ -50,6 +50,13 @@ public class RecipeRowView : MonoBehaviour
     private bool interactable = true;
     private bool hovered;
 
+    // Обучение: строку обводят, пока её не нажмут.
+    public void SetHighlighted(bool value)
+    {
+        var outline = icon != null ? icon.GetComponent<HoverOutline>() : null;
+        if (outline != null) outline.Pinned = value;
+    }
+
     public void Refresh()
     {
         if (recipe == null || icon == null) return;
@@ -138,7 +145,11 @@ public class RecipeRowView : MonoBehaviour
             else Unhovered?.Invoke();
         }
 
-        if (over && interactable && mouse.leftButton.wasPressedThisFrame) Clicked?.Invoke();
+        if (over && interactable && mouse.leftButton.wasPressedThisFrame && TutorialFocus.Allows(transform))
+        {
+            AudioView.Click();
+            Clicked?.Invoke();
+        }
     }
 
     private void OnDisable()

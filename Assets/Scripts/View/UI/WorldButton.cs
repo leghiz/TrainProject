@@ -51,7 +51,7 @@ public class WorldButton : MonoBehaviour
         IsHovered = mouse != null && IsOver(mouse) && !PointerOverUI.Check(this);
         if (mouse == null) return;
 
-        if (IsHovered && mouse.leftButton.wasPressedThisFrame) Press();
+        if (IsHovered && mouse.leftButton.wasPressedThisFrame && TutorialFocus.Allows(transform)) Press();
         else if (held && mouse.leftButton.isPressed && IsHovered && repeatWhileHeld)
         {
             heldTime += Time.unscaledDeltaTime;
@@ -75,14 +75,17 @@ public class WorldButton : MonoBehaviour
         if (t >= 1f) punchTimer = -1f;
     }
 
+    // Щелчок звучит только на первом нажатии, а не на каждом повторе при удержании.
     private void Press()
     {
-        if (!held)
+        bool first = !held;
+        if (first)
         {
             held = true;
             heldTime = 0f;
         }
         if (!Interactable) return;
+        if (first) AudioView.Click();
         punchTimer = 0f;
         Clicked?.Invoke();
     }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [ExecuteAlways]
 public class TrainView : MonoBehaviour
@@ -21,6 +22,7 @@ public class TrainView : MonoBehaviour
     [SerializeField] private WagonConfig[] previewWagons;
 
     private readonly List<WagonView> wagons = new List<WagonView>();
+    public IReadOnlyList<WagonView> Wagons => wagons;
 
     public LocomotiveView Locomotive => locomotive;
 
@@ -91,9 +93,47 @@ public class TrainView : MonoBehaviour
         }
     }
 
+    // Со станком в руке — вагон или локомотив под мышкой (с запасом на сцепку и высоту), иначе пусто.
+    public Bounds? HeldOverBounds
+    {
+        get
+        {
+            var part = PartUnderHeldItem();
+            if (part is WagonView wagon) return new Bounds(wagon.transform.position, new Vector3(wagon.Width, wagon.Height, 0f));
+            if (part is LocomotiveView engine) return new Bounds(engine.transform.position, new Vector3(engine.Width, engine.Height, 0f));
+            return null;
+        }
+    }
+
+    private Component PartUnderHeldItem()
+    {
+        if (!Application.isPlaying || !HandView.Holding) return null;
+        var mouse = Mouse.current;
+        var cam = Camera.main;
+        if (mouse == null || cam == null) return null;
+
+        Vector2 point = cam.ScreenToWorldPoint(mouse.position.ReadValue());
+        if (locomotive != null && IsNear(locomotive.transform.position, locomotive.Width, locomotive.Height, point)) return locomotive;
+        foreach (var wagon in wagons)
+            if (IsNear(wagon.transform.position, wagon.Width, wagon.Height, point)) return wagon;
+        return null;
+    }
+
+    private bool IsNear(Vector3 center, float width, float height, Vector2 point) =>
+        Mathf.Abs(point.x - center.x) <= width / 2f + gap / 2f
+        && point.y >= center.y - height / 2f - cellSize / 2f
+        && point.y <= center.y + height / 2f + cellSize * 1.5f;
+
+    // В тумане видно то, к чему ближе камера; со станком в руке — то, над чем мышка.
+    private Component FocusPart()
+    {
+        var held = PartUnderHeldItem();
+        return held != null ? held : PartNearestToCamera();
+    }
+
     private void ApplyFog()
     {
-        fogFocus = fog ? PartNearestToCamera() : null;
+        fogFocus = fog ? FocusPart() : null;
         if (locomotive != null) locomotive.SetFogged(fog && fogFocus != locomotive);
         foreach (var wagon in wagons) wagon.SetFogged(fog && fogFocus != wagon);
     }
@@ -114,7 +154,7 @@ public class TrainView : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (Application.isPlaying && fog && PartNearestToCamera() != fogFocus) ApplyFog();
+        if (Application.isPlaying && fog && FocusPart() != fogFocus) ApplyFog();
     }
     
     public float CellsToX(float cellsBehindLocomotive)

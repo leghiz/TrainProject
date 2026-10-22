@@ -89,6 +89,15 @@ public class TrainModel
         }
     }
     
+    // Только станки в вагонах (обучение: добываем, а путь, коптильня и износ стоят).
+    public void TickWagons(float deltaTime, ResourceStorageModel storage)
+    {
+        for (int i = wagons.Count - 1; i >= 0; i--)
+        {
+            if (i < wagons.Count) wagons[i].Tick(deltaTime, storage);
+        }
+    }
+
     public void Tick(float deltaTime, ResourceStorageModel storage, float wearMultiplier = 1f)
     {
         Locomotive.Tick(deltaTime, storage);

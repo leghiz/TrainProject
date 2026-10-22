@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Клетки едут вместе с тряской камеры (CameraRig.ShakeOffset), поэтому на экране стоят ровно, пока ставишь станок.
+[DefaultExecutionOrder(1000)]
 public class PlacementGridView : MonoBehaviour
 {
     [SerializeField] private Sprite cellSprite;
@@ -83,8 +85,18 @@ public class PlacementGridView : MonoBehaviour
 
     public void ClearHighlight() => highlighted.Clear();
 
+    private Vector3 basePosition;
+    private bool baseSaved;
+
     private void LateUpdate()
     {
+        if (!baseSaved)
+        {
+            basePosition = transform.localPosition;
+            baseSaved = true;
+        }
+        transform.localPosition = basePosition + (Vector3)CameraRig.ShakeOffset;
+
         time += Time.unscaledDeltaTime;
         float fadeStep = fadeTime > 0f ? Time.unscaledDeltaTime / fadeTime : 1f;
         float litStep = highlightTime > 0f ? Time.unscaledDeltaTime / highlightTime : 1f;

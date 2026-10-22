@@ -12,6 +12,9 @@ public class HandView : MonoBehaviour
     [Tooltip("Чем рисовать ящик без картинки: растягивается на его клетки")]
     [SerializeField] private Sprite blankSprite;
 
+    // В руке станок или ящик: туман и камера следят за вагоном под мышкой.
+    public static bool Holding { get; private set; }
+
     public event Action Released;
     public event Action CancelPressed;
     public event Action RightReleased;
@@ -24,6 +27,7 @@ public class HandView : MonoBehaviour
         ghost.transform.localScale = Vector3.one;
         ghost.sprite = sprite;
         ghost.gameObject.SetActive(sprite != null);
+        Holding = ghost.gameObject.activeSelf;
     }
 
     // Предмет на несколько клеток: cellOffset — где его центр относительно мышки, в клетках.
@@ -42,9 +46,16 @@ public class HandView : MonoBehaviour
             ghost.transform.localScale = new Vector3(cells.x * cellSize / size.x, cells.y * cellSize / size.y, 1f);
         }
         ghost.gameObject.SetActive(ghost.sprite != null);
+        Holding = ghost.gameObject.activeSelf;
     }
 
-    public void Hide() => ghost.gameObject.SetActive(false);
+    public void Hide()
+    {
+        ghost.gameObject.SetActive(false);
+        Holding = false;
+    }
+
+    private void OnDestroy() => Holding = false;
 
     private void LateUpdate()
     {
