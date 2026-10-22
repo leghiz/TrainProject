@@ -30,6 +30,10 @@ public class JourneyModel
     private readonly List<TravelEventConfig> activeEvents = new List<TravelEventConfig>();
     public IReadOnlyList<TravelEventConfig> ActiveEvents => activeEvents;
 
+    // Обучение: путь стоит (время, буря, дождь, коптильня, износ). MachinesWork — станки в вагонах всё же добывают.
+    public bool Frozen { get; set; }
+    public bool MachinesWork { get; set; }
+
     public event Action<JourneyState> StateChanged;
     public event Action<int> NodeReached;
 
@@ -76,7 +80,7 @@ public class JourneyModel
         if (index < 0 || index >= offers.Count) return false;
         var offer = offers[index];
 
-        var wagon = new WagonModel(offer.Wagon);
+        var wagon = new WagonModel(offer.Wagon, offer.Condition);
         if (at >= 0) Train.Insert(wagon, at);
         else Train.Attach(wagon);
         var box = wagon.TryPlaceBox(offer.Box, Vector2Int.zero);
@@ -91,8 +95,17 @@ public class JourneyModel
         return true;
     }
     
-    public bool DisassembleCargo(out MachineConfig machine, out MachineTrait trait) =>
-        Delivery.Disassemble(Config.disassemblyMachines, Config.disassemblyTraits, random, out machine, out trait);
+    public bool DisassembleCargo(List<(MachineConfig machine, MachineTrait trait)> result) =>
+        Delivery.Disassemble(Config.disassemblyMachines, Config.disassemblyTraits, random, result);
+
+    // Награда за доставку: слитки уходят на склад, когда игрок нажал на слиток на экране станции.
+    public void CollectDeliveryIngots()
+    {
+        var reward = Delivery.Reward;
+        if (reward == null || reward.IngotsTaken) return;
+        reward.IngotsTaken = true;
+        Storage.Add(ResourceType.Ingot, reward.Ingots);
+    }
     
     private bool CanOfferCargo => !Delivery.IsActive && Node + Config.deliveryDistance < Config.nodeCount;
 
@@ -100,12 +113,19 @@ public class JourneyModel
     {
         if (State != JourneyState.Station) return;
         CurrentStation = null;
+        CollectDeliveryIngots();
+        Delivery.ClearReward();
         SetState(JourneyState.Map);
     }
 
     public void Tick(float deltaTime)
     {
         if (State != JourneyState.Travelling) return;
+        if (Frozen)
+        {
+            if (MachinesWork) Train.TickWagons(deltaTime, Storage);
+            return;
+        }
 
         Train.Tick(deltaTime, Storage, WearMultiplier());
         if (State != JourneyState.Travelling) return;
@@ -127,7 +147,7 @@ public class JourneyModel
         activeEvents.Clear();
         NodeReached?.Invoke(Node);
 
-        if (!Delivery.TryDeliver(Map.Current, Config.deliveryStation, Storage))
+        if (!Delivery.TryDeliver(Map.Current, Config.deliveryStation, Config.disassemblyTraits, random))
             Delivery.CheckMissed(Map.Current);
 
         var station = Map.Current.Station;
