@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9841577b990a524383c4904632cb178, type: 3}
   m_Name: LumberYard
   m_EditorClassIdentifier: Assembly-CSharp::StationConfig
-  displayName: "\u041B\u0435\u0441\u043E\u0441\u043A\u043B\u0430\u0434"
-  icon: {fileID: 0}
+  displayName: Lumber Yard
+  icon: {fileID: 21300000, guid: 0ea500406bf7e0f4dbbf100ec78b48ae, type: 3}
   offerCount: 3
   pickCount: 1
   wagons:
@@ -30,6 +30,9 @@ MonoBehaviour:
     weight: 100
   woodMultiplier: 2
   scrapMultiplier: 1
+  cargoBoxes: []
+  cargoChoiceCount: 2
+  cargoWagons: []
   eventsOnWayHere:
   - travelEvent: {fileID: 11400000, guid: fda814443d9f2bd48b2687aa15c29a14, type: 2}
     chance: 1

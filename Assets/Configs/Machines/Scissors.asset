@@ -18,12 +18,12 @@ MonoBehaviour:
   craftWood: 3
   craftScrap: 0
   craftIngots: 0
-  craftTime: 5
+  craftTime: 8
   action: 0
   workInterval: 3
   resource: 1
   amount: 1
-  wagonDamage: 2
+  wagonDamage: 1
   outputResource: 2
   outputAmount: 1
   charge: 0

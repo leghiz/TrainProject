@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9841577b990a524383c4904632cb178, type: 3}
   m_Name: Junkyard
   m_EditorClassIdentifier: Assembly-CSharp::StationConfig
-  displayName: "\u0421\u0432\u0430\u043B\u043A\u0430"
-  icon: {fileID: 0}
+  displayName: Junkyard
+  icon: {fileID: 21300000, guid: 2b285656369cb33478745a36b275cd04, type: 3}
   offerCount: 5
   pickCount: 2
   wagons:
@@ -30,6 +30,9 @@ MonoBehaviour:
     weight: 100
   woodMultiplier: 1
   scrapMultiplier: 1
+  cargoBoxes: []
+  cargoChoiceCount: 2
+  cargoWagons: []
   eventsOnWayHere: []
   eventsOnWayFromHere:
   - travelEvent: {fileID: 11400000, guid: d651647a104b7ed46801f70b29d514b5, type: 2}

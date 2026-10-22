@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: Workbench
   m_EditorClassIdentifier: Assembly-CSharp::MachineConfig
   displayName: "\u0412\u0435\u0440\u0441\u0442\u0430\u043A"
-  sprite: {fileID: 21300000, guid: 346402568d369cf43b4ee1684f4248ec, type: 3}
+  sprite: {fileID: 21300000, guid: e59ecf37d98d9824c984ffaff95cd289, type: 3}
   size: {x: 2, y: 1}
   craftWood: 0
   craftScrap: 0
+  craftIngots: 0
+  craftTime: 5
   action: 4
   workInterval: 1
   resource: 0
@@ -25,4 +27,5 @@ MonoBehaviour:
   outputResource: 2
   outputAmount: 1
   charge: 0
+  capacity: 0
   maxHp: 20

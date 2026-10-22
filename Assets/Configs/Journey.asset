@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Journey
   m_EditorClassIdentifier: Assembly-CSharp::JourneyConfig
   nodeCount: 12
-  travelSeconds: 10
+  travelSeconds: 60
+  startWood: 0
+  startScrap: 2
   minNodesPerColumn: 2
   maxNodesPerColumn: 3
+  extraRoadChance: 0.5
   stations:
   - station: {fileID: 11400000, guid: 3ba0eca5f3391e947a3a0a4d48b7da5a, type: 2}
     weight: 40
@@ -29,7 +32,7 @@ MonoBehaviour:
     weight: 15
   finalStation: {fileID: 11400000, guid: cd569c669de956c45a2543bf809afa09, type: 2}
   seed: 0
-  deliveryDistance: 3
+  deliveryDistance: 2
   deliveryStation: {fileID: 11400000, guid: 5ac9da1efd6297a4f97d55e268a326ab, type: 2}
   disassemblyMachines:
   - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}

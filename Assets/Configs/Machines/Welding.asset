@@ -15,10 +15,10 @@ MonoBehaviour:
   displayName: "\u0421\u0432\u0430\u0440\u043E\u0447\u043D\u044B\u0439"
   sprite: {fileID: 21300000, guid: 8d9d36f134a38604eb1418872a976ff6, type: 3}
   size: {x: 1, y: 1}
-  craftWood: 3
-  craftScrap: 2
+  craftWood: 2
+  craftScrap: 1
   craftIngots: 0
-  craftTime: 5
+  craftTime: 6
   action: 1
   workInterval: 3
   resource: 0
@@ -26,6 +26,6 @@ MonoBehaviour:
   wagonDamage: 2
   outputResource: 2
   outputAmount: 1
-  charge: 20
+  charge: 150
   capacity: 0
   maxHp: 20

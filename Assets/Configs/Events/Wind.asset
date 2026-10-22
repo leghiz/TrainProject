@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 188d4918c648d954286b04b94cb0e259, type: 3}
   m_Name: Wind
   m_EditorClassIdentifier: Assembly-CSharp::TravelEventConfig
-  displayName: "\u0412\u0435\u0442\u0435\u0440"
-  icon: {fileID: 0}
+  displayName: Wind
+  icon: {fileID: 21300000, guid: e6fadea803df81e4da13b5f08a3efef5, type: 3}
   type: 1
   machineDamagePerSecond: 1
   wearMultiplier: 1.5

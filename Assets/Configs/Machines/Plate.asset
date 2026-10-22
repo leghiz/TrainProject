@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Plate
   m_EditorClassIdentifier: Assembly-CSharp::MachineConfig
   displayName: "\u041B\u0438\u0441\u0442 \u043E\u0431\u0448\u0438\u0432\u043A\u0438"
-  sprite: {fileID: 21300000, guid: 423dea202f52ac2479a9c1c12c35dc3a, type: 3}
+  sprite: {fileID: 21300000, guid: 040ae8ad84a0bcc47b068e74288a14e4, type: 3}
   size: {x: 1, y: 1}
   craftWood: 0
   craftScrap: 0
-  craftIngots: 5
-  craftTime: 8
+  craftIngots: 6
+  craftTime: 10
   action: 5
   workInterval: 3
   resource: 0
@@ -28,4 +28,4 @@ MonoBehaviour:
   outputAmount: 1
   charge: 0
   capacity: 0
-  maxHp: 10
+  maxHp: 15

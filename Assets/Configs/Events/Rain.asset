@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 188d4918c648d954286b04b94cb0e259, type: 3}
   m_Name: Rain
   m_EditorClassIdentifier: Assembly-CSharp::TravelEventConfig
-  displayName: "\u0414\u043E\u0436\u0434\u044C"
-  icon: {fileID: 0}
+  displayName: Rain
+  icon: {fileID: 21300000, guid: 519a6f8152fad4142abcca095ca4d15f, type: 3}
   type: 0
-  machineDamagePerSecond: 1
+  machineDamagePerSecond: 0.3
   wearMultiplier: 1.5

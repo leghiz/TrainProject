@@ -12,12 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9841577b990a524383c4904632cb178, type: 3}
   m_Name: Cargo
   m_EditorClassIdentifier: Assembly-CSharp::StationConfig
-  displayName: "\u0413\u0440\u0443\u0437\u043E\u0432\u0430\u044F"
-  icon: {fileID: 0}
+  displayName: Freight
+  icon: {fileID: 21300000, guid: 21c67aadb2fe15c48a35fc69a8dffa8d, type: 3}
   offerCount: 0
   pickCount: 0
   wagons: []
-  conditions: []
+  conditions:
+  - condition: {fileID: 11400000, guid: 15c0cc9bd24dad846b6b1604ddd18283, type: 2}
+    weight: 60
+  - condition: {fileID: 11400000, guid: 8869bb83a8d52334c9ef13c7d9d89e81, type: 2}
+    weight: 15
+  - condition: {fileID: 11400000, guid: 78a6b5ccbece18545b85a2ede265af5a, type: 2}
+    weight: 15
+  - condition: {fileID: 11400000, guid: 33207a864cfb4584c90332fb3fe8099b, type: 2}
+    weight: 10
   woodMultiplier: 1
   scrapMultiplier: 1
   cargoBoxes:
@@ -25,6 +33,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a1035edede4ec4644b51c3fcd458bda4, type: 2}
   - {fileID: 11400000, guid: 70c5e6d801964d94caae59b7d05cddfa, type: 2}
   - {fileID: 11400000, guid: 62a8e2cb4ab2db54690c552a5a38f9aa, type: 2}
+  cargoChoiceCount: 2
   cargoWagons:
   - {fileID: 11400000, guid: 2e521d0f9afc76f428ce62ab6c5675d1, type: 2}
   - {fileID: 11400000, guid: ae4d5ba43aaeb7343b2a4b1174581cb8, type: 2}

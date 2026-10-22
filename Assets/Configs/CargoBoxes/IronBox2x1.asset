@@ -13,9 +13,14 @@ MonoBehaviour:
   m_Name: IronBox2x1
   m_EditorClassIdentifier: Assembly-CSharp::CargoBoxConfig
   displayName: Iron Box
-  sprite: {fileID: 0}
+  sprite: {fileID: 21300000, guid: 9b913c7594ef2b943911f842d67e048f, type: 3}
   size: {x: 2, y: 1}
   material: 1
-  weight: 3
-  maxHp: 20
+  weight: 0
+  maxHp: 40
   rewardIngots: 7
+  disassemblyMachines:
+  - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}
+  deliveryMachines:
+  - {fileID: 11400000, guid: 6d2767edee289224eba1325c02135fae, type: 2}
+  - {fileID: 11400000, guid: cc61c393a249e524cbe7d6033f15107d, type: 2}

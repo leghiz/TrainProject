@@ -12,9 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9841577b990a524383c4904632cb178, type: 3}
   m_Name: Final
   m_EditorClassIdentifier: Assembly-CSharp::StationConfig
-  displayName: "\u041A\u043E\u043D\u0435\u0447\u043D\u0430\u044F"
+  displayName: Terminus
   icon: {fileID: 0}
   offerCount: 0
   pickCount: 0
   wagons: []
+  conditions: []
+  woodMultiplier: 1
+  scrapMultiplier: 1
+  cargoBoxes: []
+  cargoChoiceCount: 2
+  cargoWagons: []
+  eventsOnWayHere: []
+  eventsOnWayFromHere: []
   isFinal: 1

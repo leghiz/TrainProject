@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9841577b990a524383c4904632cb178, type: 3}
   m_Name: MetalYard
   m_EditorClassIdentifier: Assembly-CSharp::StationConfig
-  displayName: "\u041C\u0435\u0442\u0430\u043B\u043B\u043E\u0441\u043A\u043B\u0430\u0434"
-  icon: {fileID: 0}
+  displayName: Metal Yard
+  icon: {fileID: 21300000, guid: 636e3afb483ebdb42be1a0a6d3f5206b, type: 3}
   offerCount: 3
   pickCount: 1
   wagons:
@@ -30,6 +30,9 @@ MonoBehaviour:
     weight: 100
   woodMultiplier: 1
   scrapMultiplier: 2
+  cargoBoxes: []
+  cargoChoiceCount: 2
+  cargoWagons: []
   eventsOnWayHere:
   - travelEvent: {fileID: 11400000, guid: dad96066807fe79409f6a51c9ff6922f, type: 2}
     chance: 0.5

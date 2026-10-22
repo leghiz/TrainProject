@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 188d4918c648d954286b04b94cb0e259, type: 3}
   m_Name: Fog
   m_EditorClassIdentifier: Assembly-CSharp::TravelEventConfig
-  displayName: "\u0422\u0443\u043C\u0430\u043D"
-  icon: {fileID: 0}
+  displayName: Fog
+  icon: {fileID: 21300000, guid: e90c9fe1860b6b7448e233c052f21c5b, type: 3}
   type: 2
   machineDamagePerSecond: 1
   wearMultiplier: 1.5

@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StormConfig
   speedByNode:
   - 0.9
-  - 0.95
-  - 1.05
-  - 1.1
-  speedStepAfterList: 0.05
+  - 0.97
+  - 1.03
+  - 1.08
+  speedStepAfterList: 0.03
   cellsPerSecondAtSpeed1: 1
   startDistance: 10
   damagePerSecond: 5

@@ -17,5 +17,5 @@ MonoBehaviour:
   size: {x: 4, y: 1}
   isOpen: 1
   maxHp: 80
-  wood: 20
+  wood: 40
   scrap: 20
