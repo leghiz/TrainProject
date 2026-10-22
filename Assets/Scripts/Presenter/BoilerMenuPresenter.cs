@@ -25,7 +25,15 @@ public class BoilerMenuPresenter : IDisposable
         locomotiveView.WorkbenchClicked += Close;
         locomotive.Destroyed += Close;
         view.AddClicked += AddWood;
+        view.UpgradeClicked += Upgrade;
         view.CloseClicked += Close;
+        locomotiveView.FoggedChanged += OnFogged;
+    }
+
+    // В тумане камера ушла к другому вагону — меню коптильни закрывается.
+    private void OnFogged(bool fogged)
+    {
+        if (fogged && view.IsOpen) Close();
     }
 
     // Каждый кадр, пока меню открыто: дрова горят, вагоны цепляются — числа живые.
@@ -67,6 +75,12 @@ public class BoilerMenuPresenter : IDisposable
         Refresh();
     }
 
+    // «+» внизу меню: за слитки — следующий уровень коптильни (бак больше, едет быстрее, тянет больше).
+    private void Upgrade()
+    {
+        if (locomotive.TryUpgradeBoiler(storage)) Refresh();
+    }
+
     private void Refresh()
     {
         var boiler = locomotive.Boiler;
@@ -75,6 +89,7 @@ public class BoilerMenuPresenter : IDisposable
         bool roomLeft = boiler.Capacity <= 0 || boiler.Loaded < boiler.Capacity;
         view.SetCanAdd(roomLeft && storage.Has(ResourceType.Wood, 1));
         view.SetTraction(train.Weight, locomotive.HasLevels ? locomotive.Level.traction : 0);
+        view.SetUpgrade(locomotive.UpgradeCost, locomotive.CanUpgradeBoiler, locomotive.CanAffordUpgrade(storage));
     }
 
     public void Dispose()
@@ -83,6 +98,8 @@ public class BoilerMenuPresenter : IDisposable
         locomotiveView.WorkbenchClicked -= Close;
         locomotive.Destroyed -= Close;
         view.AddClicked -= AddWood;
+        view.UpgradeClicked -= Upgrade;
         view.CloseClicked -= Close;
+        locomotiveView.FoggedChanged -= OnFogged;
     }
 }

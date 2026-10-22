@@ -53,6 +53,14 @@ public class LocomotiveView : MonoBehaviour
 
     [Tooltip("Размер области вокруг точки, над которой можно отпустить лист (в единицах мира)")]
     [SerializeField] private Vector2 plateSlotSize = new Vector2(16f, 16f);
+    [Tooltip("Рамки под листы, по одной на точку: видны, пока лист в руке, под мышкой загораются")]
+    [SerializeField] private SlotCellView[] plateCells;
+    [Tooltip("Маленькие полоски хп под листами, по одной на точку: прячутся, пока листа нет")]
+    [SerializeField] private GameObject[] plateHpBars;
+    [Tooltip("Точки у левого края заливки этих полосок: их масштаб по X = хп листа")]
+    [SerializeField] private Transform[] plateHpFills;
+    [Tooltip("Ширина маленькой полоски хп, пиксели")]
+    [SerializeField] private int plateHpWidth = 16;
 
     [Header("Готовый станок с верстака")]
     [Tooltip("Иконка над локомотивом: её хватают мышкой и тащат на вагон")]
@@ -120,11 +128,21 @@ public class LocomotiveView : MonoBehaviour
             if (rider != null) rider.position += delta;
     }
 
+    // Камера ушла к другому вагону в тумане: интерфейс локомотива (хп, готовый станок, полоска крафта) прячется,
+    // а открытые меню закрываются по этому событию.
+    public event Action<bool> FoggedChanged;
+
     public void SetFogged(bool value)
     {
+        bool changed = fogged != value;
         fogged = value;
         foreach (var outline in GetComponentsInChildren<HoverOutline>(true)) outline.enabled = !value;
         if (boilerUpgrade != null) boilerUpgrade.SetBlocked(value);
+        ApplyHp();
+        ApplyReady();
+        ApplyCraftProgress();
+        ApplyPlateHp();
+        if (changed) FoggedChanged?.Invoke(value);
     }
 
     public void SetHp(int hp, int maxHp)
@@ -142,7 +160,12 @@ public class LocomotiveView : MonoBehaviour
     {
         if (hide) hpHiders.Add(who);
         else hpHiders.Remove(who);
-        if (hpBar != null) hpBar.SetActive(hpHiders.Count == 0);
+        ApplyHp();
+    }
+
+    private void ApplyHp()
+    {
+        if (hpBar != null) hpBar.SetActive(hpHiders.Count == 0 && !fogged);
     }
 
     // Пока открыто меню, сама коптильня или верстак обведены.
@@ -165,6 +188,11 @@ public class LocomotiveView : MonoBehaviour
 
     public BoilerUpgradeView BoilerUpgrade => boilerUpgrade;
 
+    // Обучение: на что указывать стрелкой.
+    public Transform WorkbenchPoint => workbench != null ? workbench.transform : workbenchSlot;
+    public Transform BoilerPoint => boiler != null ? boiler.transform : boilerSlot;
+    public Transform ReadyIconPoint => readyIcon != null ? readyIcon.transform : null;
+
     private float? craftProgress;
 
     public void SetCraftProgress(float? progress)
@@ -176,7 +204,7 @@ public class LocomotiveView : MonoBehaviour
     // Полоска крафта висит там же, где готовый станок, и прячется вместе с ним (меню коптильни).
     private void ApplyCraftProgress()
     {
-        if (craftProgressBar != null) craftProgressBar.SetActive(craftProgress.HasValue && !readySuppressed);
+        if (craftProgressBar != null) craftProgressBar.SetActive(craftProgress.HasValue && !readySuppressed && !fogged);
         if (!craftProgress.HasValue || craftProgressFill == null) return;
         int width = Mathf.Max(craftProgressWidth, 1);
         craftProgressFill.localScale = new Vector3(Mathf.Round(Mathf.Clamp01(craftProgress.Value) * width) / width, 1f, 1f);
@@ -220,6 +248,39 @@ public class LocomotiveView : MonoBehaviour
     {
         placementPreview.gameObject.SetActive(false);
         if (welderCell != null) welderCell.ClearHighlight();
+        if (plateCells != null) foreach (var cell in plateCells) if (cell != null) cell.ClearHighlight();
+    }
+
+    // Лист в руке — видны рамки всех мест под листы.
+    public void ShowPlateCells(bool value)
+    {
+        if (plateCells == null) return;
+        foreach (var cell in plateCells) if (cell != null) cell.Show(value);
+    }
+
+    private float?[] plateHp;
+
+    // Хп листа маленькой полоской под ним; null — листа нет, полоска спрятана.
+    public void SetPlateHp(int slot, float? share)
+    {
+        if (plateHp == null) plateHp = new float?[PlateSlotCount];
+        if (slot < 0 || slot >= plateHp.Length) return;
+        plateHp[slot] = share;
+        ApplyPlateHp();
+    }
+
+    private void ApplyPlateHp()
+    {
+        if (plateHp == null || plateHpBars == null) return;
+        int width = Mathf.Max(plateHpWidth, 1);
+        for (int i = 0; i < plateHp.Length && i < plateHpBars.Length; i++)
+        {
+            if (plateHpBars[i] == null) continue;
+            bool shown = plateHp[i].HasValue && !fogged;
+            plateHpBars[i].SetActive(shown);
+            if (!shown || plateHpFills == null || i >= plateHpFills.Length || plateHpFills[i] == null) continue;
+            plateHpFills[i].localScale = new Vector3(Mathf.Round(Mathf.Clamp01(plateHp[i].Value) * width) / width, 1f, 1f);
+        }
     }
 
     public MachineView AddPlate(int slot)
@@ -231,6 +292,13 @@ public class LocomotiveView : MonoBehaviour
 
     public void ShowPlatePreview(int slot, bool canPlace)
     {
+        if (plateCells != null && slot < plateCells.Length && plateCells[slot] != null)
+        {
+            for (int i = 0; i < plateCells.Length; i++)
+                if (plateCells[i] != null && i != slot) plateCells[i].ClearHighlight();
+            plateCells[slot].Highlight(canPlace);
+            return;
+        }
         placementPreview.gameObject.SetActive(true);
         placementPreview.color = canPlace ? canPlaceColor : cannotPlaceColor;
         placementPreview.transform.position = plateSlots[slot].position;
@@ -261,7 +329,7 @@ public class LocomotiveView : MonoBehaviour
         ApplyCraftProgress();
     }
 
-    private void ApplyReady() => readyIcon.gameObject.SetActive(readyWanted && !readySuppressed);
+    private void ApplyReady() => readyIcon.gameObject.SetActive(readyWanted && !readySuppressed && !fogged);
 
     private void Update()
     {
@@ -291,18 +359,31 @@ public class LocomotiveView : MonoBehaviour
 
         if (fogged || PointerOverUI.Check()) return;
 
-        if (mouse.rightButton.wasPressedThisFrame && part != LocomotivePart.None) PartRightPressed?.Invoke(part);
+        if (mouse.rightButton.wasPressedThisFrame && part != LocomotivePart.None && !TutorialFocus.Active) PartRightPressed?.Invoke(part);
 
-        if (mouse.leftButton.wasReleasedThisFrame)
+        if (mouse.leftButton.wasReleasedThisFrame && !TutorialFocus.Active)
         {
             if (hovered) WelderSlotReleased?.Invoke();
             if (plateSlot.HasValue) PlateSlotReleased?.Invoke(plateSlot.Value);
         }
 
         if (!mouse.leftButton.wasPressedThisFrame) return;
-        if (IsOverReadyIcon(world)) ReadyIconPressed?.Invoke();
-        else if (IsOver(world, workbenchSlot, workbenchCells)) WorkbenchClicked?.Invoke();
-        else if (IsOver(world, boilerSlot, boilerCells)) BoilerClicked?.Invoke();
+        if (IsOverReadyIcon(world))
+        {
+            if (TutorialFocus.Allows(readyIcon.transform)) ReadyIconPressed?.Invoke();
+        }
+        else if (IsOver(world, workbenchSlot, workbenchCells))
+        {
+            if (!TutorialFocus.Allows(WorkbenchPoint)) return;
+            AudioView.Click();
+            WorkbenchClicked?.Invoke();
+        }
+        else if (IsOver(world, boilerSlot, boilerCells))
+        {
+            if (!TutorialFocus.Allows(BoilerPoint)) return;
+            AudioView.Click();
+            BoilerClicked?.Invoke();
+        }
     }
 
     private bool IsOver(Vector2 world, Transform slot, Vector2Int cells)

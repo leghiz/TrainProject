@@ -25,12 +25,25 @@ public class BoilerMenuView : MonoBehaviour
     [SerializeField] private Transform fuelFill;
     [Tooltip("Ширина полоски в пикселях: заполнение округляется до целого пикселя")]
     [SerializeField] private int fuelWidth = 32;
+    [Tooltip("Как быстро полоска доезжает до нового значения: доля полной полоски в секунду")]
+    [SerializeField] private float fuelSpeed = 1.5f;
     [SerializeField] private WorldButton addButton;
     [Tooltip("Что тускнеет, когда дров положить нельзя (нет дерева или бак полон)")]
     [SerializeField] private SpriteRenderer[] addButtonParts;
     [Tooltip("Плюсик на кнопке: тускнеет вместе с ней")]
     [SerializeField] private TMP_Text addLabel;
     [SerializeField] private Color disabledTint = new Color(1f, 1f, 1f, 0.4f);
+
+    [Header("Улучшение коптильни")]
+    [Tooltip("Ряд улучшения целиком: прячется, когда коптильня уже на последнем уровне")]
+    [SerializeField] private GameObject upgradeGroup;
+    [SerializeField] private WorldButton upgradeButton;
+    [Tooltip("Цена улучшения в слитках")]
+    [SerializeField] private TMP_Text upgradeCost;
+    [Tooltip("Что тускнеет, когда слитков не хватает")]
+    [SerializeField] private SpriteRenderer[] upgradeParts;
+    [Tooltip("Плюсик на кнопке улучшения: тускнеет вместе с ней")]
+    [SerializeField] private TMP_Text upgradeLabel;
 
     [Header("Тяга")]
     [SerializeField] private TMP_Text traction;
@@ -44,18 +57,24 @@ public class BoilerMenuView : MonoBehaviour
     [SerializeField] private float overshoot = 1.8f;
 
     public event Action AddClicked;
+    public event Action UpgradeClicked;
     public event Action CloseClicked;
 
     public bool IsOpen => root.activeSelf;
     public int WoodPerClick => woodPerClick;
 
     private Color[] partColors;
+    private Color[] upgradeColors;
     private Color tractionColor;
     private float time;
+    private float fuelShown = -1f;
+    private float fuelTarget;
 
     private void Awake()
     {
         if (addButton != null) addButton.Clicked += () => AddClicked?.Invoke();
+        if (upgradeButton != null) upgradeButton.Clicked += () => UpgradeClicked?.Invoke();
+        upgradeColors = Colors(upgradeParts);
         if (addButtonParts != null)
         {
             partColors = new Color[addButtonParts.Length];
@@ -69,6 +88,7 @@ public class BoilerMenuView : MonoBehaviour
     {
         root.SetActive(true);
         time = 0f;
+        fuelShown = -1f;
         if (woodCost != null) woodCost.text = woodPerClick.ToString();
         Place();
         Animate();
@@ -76,12 +96,28 @@ public class BoilerMenuView : MonoBehaviour
 
     public void Hide() => root.SetActive(false);
 
+    public Transform AddButtonPoint => addButton != null ? addButton.transform : null;
+
+    // Обучение: кнопку «подкинуть дров» обводят, пока её не нажмут.
+    public void HighlightAdd(bool value)
+    {
+        var outline = addButton != null ? addButton.GetComponent<HoverOutline>() : null;
+        if (outline != null) outline.Pinned = value;
+    }
+
+    // Полоска не прыгает, а плавно доезжает до нового значения, по целым пикселям.
     public void SetFuel(int loaded, int capacity)
     {
-        if (fuelFill == null) return;
-        float share = capacity > 0 ? Mathf.Clamp01((float)loaded / capacity) : 0f;
+        fuelTarget = capacity > 0 ? Mathf.Clamp01((float)loaded / capacity) : 0f;
+        if (fuelShown < 0f) fuelShown = fuelTarget;
+        ApplyFuel();
+    }
+
+    private void ApplyFuel()
+    {
+        if (fuelFill == null || fuelShown < 0f) return;
         int width = Mathf.Max(fuelWidth, 1);
-        fuelFill.localScale = new Vector3(Mathf.Round(share * width) / width, 1f, 1f);
+        fuelFill.localScale = new Vector3(Mathf.Round(fuelShown * width) / width, 1f, 1f);
     }
 
     public void SetCanAdd(bool value)
@@ -94,6 +130,30 @@ public class BoilerMenuView : MonoBehaviour
             if (addButtonParts[i] == null) continue;
             addButtonParts[i].color = value ? partColors[i] : partColors[i] * disabledTint;
         }
+    }
+
+    // available — есть ли куда улучшать; canAfford — хватает ли слитков.
+    public void SetUpgrade(int cost, bool available, bool canAfford)
+    {
+        if (upgradeGroup != null) upgradeGroup.SetActive(available);
+        if (!available) return;
+        if (upgradeCost != null) upgradeCost.text = cost.ToString();
+        if (upgradeButton != null) upgradeButton.Interactable = canAfford;
+        if (upgradeLabel != null) upgradeLabel.alpha = canAfford ? 1f : disabledTint.a;
+        if (upgradeParts == null) return;
+        for (int i = 0; i < upgradeParts.Length; i++)
+        {
+            if (upgradeParts[i] == null) continue;
+            upgradeParts[i].color = canAfford ? upgradeColors[i] : upgradeColors[i] * disabledTint;
+        }
+    }
+
+    private static Color[] Colors(SpriteRenderer[] parts)
+    {
+        if (parts == null) return new Color[0];
+        var colors = new Color[parts.Length];
+        for (int i = 0; i < parts.Length; i++) colors[i] = parts[i] != null ? parts[i].color : Color.white;
+        return colors;
     }
 
     public void SetTraction(float weight, int max)
@@ -110,6 +170,11 @@ public class BoilerMenuView : MonoBehaviour
         time += Time.unscaledDeltaTime;
         Place();
         Animate();
+        if (fuelShown >= 0f)
+        {
+            fuelShown = Mathf.MoveTowards(fuelShown, fuelTarget, fuelSpeed * Time.unscaledDeltaTime);
+            ApplyFuel();
+        }
 
         var mouse = Mouse.current;
         var keyboard = Keyboard.current;

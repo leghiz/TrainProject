@@ -48,6 +48,7 @@ public class WagonView : MonoBehaviour
     public event Action<Vector2Int> CellReleased;
     public event Action<Vector2Int> CellRightPressed;
     public event Action<Vector2Int> CellPressed;
+    public event Action<bool> FoggedChanged;
 
     public Vector2Int? HoveredCell { get; private set; } 
 
@@ -75,8 +76,11 @@ public class WagonView : MonoBehaviour
     // В тумане вагон видно, но навестись и нажать на него и его станки нельзя.
     public void SetFogged(bool value)
     {
+        bool changed = fogged != value;
         fogged = value;
         foreach (var outline in GetComponentsInChildren<HoverOutline>(true)) outline.enabled = !value;
+        if (placementGrid != null) placementGrid.gameObject.SetActive(!value);
+        if (changed) FoggedChanged?.Invoke(value);
     }
 
     public void SetGridSize(Vector2Int size) => gridSize = size;
@@ -170,9 +174,10 @@ public class WagonView : MonoBehaviour
             else HoverExited?.Invoke();
         }
 
+        if (!TutorialFocus.Allows(transform)) return;
         if (cell.HasValue && mouse.leftButton.wasReleasedThisFrame && !PointerOverUI.Check()) CellReleased?.Invoke(cell.Value);
-        if (cell.HasValue && mouse.rightButton.wasPressedThisFrame && !PointerOverUI.Check()) CellRightPressed?.Invoke(cell.Value);
-        if (cell.HasValue && mouse.leftButton.wasPressedThisFrame && !PointerOverUI.Check()) CellPressed?.Invoke(cell.Value);
+        if (cell.HasValue && mouse.rightButton.wasPressedThisFrame && !PointerOverUI.Check() && !TutorialFocus.Active) CellRightPressed?.Invoke(cell.Value);
+        if (cell.HasValue && mouse.leftButton.wasPressedThisFrame && !PointerOverUI.Check() && !TutorialFocus.Active) CellPressed?.Invoke(cell.Value);
     }
     
     private void Roll()

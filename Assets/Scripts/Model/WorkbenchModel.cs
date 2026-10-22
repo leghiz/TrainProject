@@ -17,11 +17,18 @@ public class WorkbenchModel
     public event Action ProgressChanged;
 
     private readonly ResourceStorageModel storage;
+    private readonly IReadOnlyList<MachineTrait> traits;
+    private readonly float traitChance;
+    private readonly Random random = new Random();
 
-    public WorkbenchModel(IReadOnlyList<MachineConfig> recipes, ResourceStorageModel storage)
+    // traits, traitChance — скрафченный станок с этим шансом получает случайное свойство (листу брони не достаётся).
+    public WorkbenchModel(IReadOnlyList<MachineConfig> recipes, ResourceStorageModel storage,
+                          IReadOnlyList<MachineTrait> traits = null, float traitChance = 0f)
     {
         Recipes = recipes ?? Array.Empty<MachineConfig>();
         this.storage = storage;
+        this.traits = traits;
+        this.traitChance = traitChance;
     }
     
     public bool CanCraft(MachineConfig machine)
@@ -90,7 +97,13 @@ public class WorkbenchModel
         var machine = InProgress;
         InProgress = null;
         ProgressChanged?.Invoke();
-        SetReady(machine, null);
+        SetReady(machine, RollTrait(machine));
+    }
+
+    private MachineTrait RollTrait(MachineConfig machine)
+    {
+        if (machine == null || machine.action == MachineAction.Plating || traits == null || traits.Count == 0) return null;
+        return random.NextDouble() < traitChance ? traits[random.Next(traits.Count)] : null;
     }
 
     private void SetReady(MachineConfig machine, MachineTrait trait)

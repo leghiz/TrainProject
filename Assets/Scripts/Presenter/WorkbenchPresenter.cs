@@ -42,6 +42,7 @@ public class WorkbenchPresenter : IDisposable
         panel.CloseClicked += HidePanel;
         locomotiveView.WorkbenchClicked += OnWorkbenchClicked;
         locomotiveView.BoilerClicked += HidePanel;
+        locomotiveView.FoggedChanged += OnFogged;
         locomotiveView.ReadyIconPressed += OnReadyIconPressed;
         build.SelectedChanged += OnSelectedChanged;
         build.Cancelled += OnCancelled;
@@ -109,6 +110,12 @@ public class WorkbenchPresenter : IDisposable
         locomotiveView.HighlightWorkbench(false);
     }
 
+    // В тумане камера ушла к другому вагону — меню верстака закрывается.
+    private void OnFogged(bool fogged)
+    {
+        if (fogged && panel.IsOpen) HidePanel();
+    }
+
     private void OnCraftClicked(MachineConfig recipe)
     {
         if (model.TryCraft(recipe)) HidePanel();
@@ -116,6 +123,7 @@ public class WorkbenchPresenter : IDisposable
 
     private void OnReadyChanged(MachineConfig machine)
     {
+        if (machine == null) hover.Clear(this);
         UpdateReady(machine);
         RefreshRows();
     }
@@ -178,6 +186,7 @@ public class WorkbenchPresenter : IDisposable
         panel.CloseClicked -= HidePanel;
         locomotiveView.WorkbenchClicked -= OnWorkbenchClicked;
         locomotiveView.BoilerClicked -= HidePanel;
+        locomotiveView.FoggedChanged -= OnFogged;
         locomotiveView.ReadyIconPressed -= OnReadyIconPressed;
         build.SelectedChanged -= OnSelectedChanged;
         build.Cancelled -= OnCancelled;

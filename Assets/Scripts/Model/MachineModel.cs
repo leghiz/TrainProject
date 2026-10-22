@@ -66,6 +66,13 @@ public class MachineModel
     
     public void Tick(float deltaTime, IMachineHost host, ResourceStorageModel storage)
     {
+        // Загрузки не хватает на одно срабатывание — станок стоит, отсчёт не идёт.
+        if (NeedsLoading && Loaded < LoadedCost())
+        {
+            timer = 0f;
+            SetWorking(false);
+            return;
+        }
         timer += deltaTime;
         if (timer < Interval) return;
         timer -= Interval;

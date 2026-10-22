@@ -11,6 +11,7 @@ public class WagonPresenter : IDisposable
     private readonly HoverModel hover;
     private readonly CargoSelectionModel cargoSelection;
     private readonly DismantleModel dismantle;
+    private readonly MachineMenuModel machineMenu;
     private object dismantleTarget;
     private (MachineModel machine, Vector2Int cell) movingFrom;
     private (CargoBoxModel box, Vector2Int cell) movingBoxFrom;
@@ -19,7 +20,8 @@ public class WagonPresenter : IDisposable
     private readonly Dictionary<CargoBoxModel, CargoBoxView> boxes = new Dictionary<CargoBoxModel, CargoBoxView>();
 
     public WagonPresenter(WagonModel model, WagonView view, BuildModel build, ResourceStorageModel storage,
-                          HoverModel hover, CargoSelectionModel cargoSelection, DismantleModel dismantle)
+                          HoverModel hover, CargoSelectionModel cargoSelection, DismantleModel dismantle,
+                          MachineMenuModel machineMenu)
     {
         this.model = model;
         this.view = view;
@@ -28,6 +30,7 @@ public class WagonPresenter : IDisposable
         this.hover = hover;
         this.cargoSelection = cargoSelection;
         this.dismantle = dismantle;
+        this.machineMenu = machineMenu;
 
         view.SetSprite(model.Config.sprite);
         if (model.Condition != null) view.SetMaterial(model.Condition.material);
@@ -56,6 +59,8 @@ public class WagonPresenter : IDisposable
         build.SelectedChanged += OnSelectedChanged;
         build.Cancelled += OnCancelled;
         build.BoxCancelled += OnBoxCancelled;
+        view.FoggedChanged += OnFogged;
+        machineMenu.Changed += OnMenuChanged;
         RefreshGrid();
     }
 
@@ -147,18 +152,32 @@ public class WagonPresenter : IDisposable
         CancelDismantle();
     }
 
+    // Пока открыто меню плавильни, её тултип держит меню — вагон свой не показывает.
     private void UpdateHover(Vector2Int cell)
     {
+        if (machineMenu.IsOpen) return;
         Vector3 anchor = view.TooltipPoint;
         var machine = model.GetMachineAt(cell);
         var box = model.GetBoxAt(cell);
-        if (machine != null)
-        {
-            Vector3 machinePoint = machines.TryGetValue(machine, out var entry) ? entry.view.transform.position : anchor;
-            hover.Show(this, () => TooltipTexts.Machine(machine), machinePoint);
-        }
-        else if (box != null) hover.Show(this, () => TooltipTexts.Box(box), anchor);
+        if (machine != null) hover.Show(this, () => TooltipTexts.Machine(machine), MachinePoint(machine));
+        else if (box != null) hover.Show(this, () => TooltipTexts.Box(box), view.AreaTop(box.Cell, box.Config.size));
         else hover.Show(this, () => TooltipTexts.Wagon(model), anchor);
+    }
+
+    private Vector3 MachinePoint(MachineModel machine) =>
+        machines.TryGetValue(machine, out var entry) ? entry.view.transform.position : view.TooltipPoint;
+
+    // Меню закрылось, а мышь всё ещё над вагоном — вернуть обычный тултип.
+    private void OnMenuChanged()
+    {
+        if (!machineMenu.IsOpen && view.HoveredCell.HasValue) UpdateHover(view.HoveredCell.Value);
+    }
+
+    // Камера ушла к другому вагону — меню станка этого вагона закрывается.
+    private void OnFogged(bool fogged)
+    {
+        if (!fogged) return;
+        foreach (var machine in model.Machines) machineMenu.Close(machine);
     }
 
     private void ClearHover() => hover.Clear(this);
@@ -171,6 +190,7 @@ public class WagonPresenter : IDisposable
     }
     private void HideMachine(MachineModel machine)
     {
+        machineMenu.Close(machine);
         if (!machines.TryGetValue(machine, out var entry)) return;
         entry.presenter.Dispose();
         view.RemoveMachine(entry.view);
@@ -234,9 +254,16 @@ public class WagonPresenter : IDisposable
         if (model.TryPlace(machine, cell, build.SelectedTrait)) build.Select(null);
     }
 
+    // Клик по плавильне открывает её меню; по другому станку — закрывает меню и загружает станок.
     private void LoadMachineAt(Vector2Int cell)
     {
         var placed = model.GetMachineAt(cell);
+        if (MachineMenuModel.HasMenu(placed))
+        {
+            machineMenu.Toggle(placed, MachinePoint(placed));
+            return;
+        }
+        machineMenu.Close();
         if (placed != null && placed.NeedsLoading) placed.Load(storage, int.MaxValue);
     }
 
@@ -291,6 +318,9 @@ public class WagonPresenter : IDisposable
         view.CellHovered -= CancelDismantleIfMovedAway;
         view.HoverExited -= CancelDismantle;
         build.SelectedChanged -= OnSelectedChanged;
+        view.FoggedChanged -= OnFogged;
+        machineMenu.Changed -= OnMenuChanged;
+        foreach (var machine in model.Machines) machineMenu.Close(machine);
         ClearHover();
         CancelDismantle();
 

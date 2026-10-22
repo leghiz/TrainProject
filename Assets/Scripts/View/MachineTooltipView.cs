@@ -102,7 +102,7 @@ public class MachineTooltipView : MonoBehaviour
         if (showIcon)
         {
             if (resourceIcon != null) resourceIcon.sprite = content.Heals ? healingIcon : IconOf(content.Resource);
-            bool showProgress = !content.Heals;
+            bool showProgress = true;
             if (progressBack != null) progressBack.SetActive(showProgress);
             if (progressFill != null)
             {
@@ -112,7 +112,10 @@ public class MachineTooltipView : MonoBehaviour
             }
         }
 
-        if (hpGroup != null) hpGroup.SetActive(content.HasHp);
+        // Справа от строки крафта без квадратика (лист брони) стрелке и полоске не к чему крепиться — прячем.
+        bool anchored = showIcon || !content.Beside;
+        if (pointer != null) pointer.gameObject.SetActive(anchored);
+        if (hpGroup != null) hpGroup.SetActive(content.HasHp && anchored);
         if (content.HasHp && hpFill != null)
         {
             int width = Mathf.Max(hpWidth, 1);

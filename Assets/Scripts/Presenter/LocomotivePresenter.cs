@@ -77,11 +77,15 @@ public class LocomotivePresenter : IDisposable
         }
     }
 
+    // Пока висит хоть один лист, полоска хп локомотива спрятана: урон идёт в листы, у каждого своя маленькая полоска.
     private void RefreshHp()
     {
         var plating = model.Plating;
-        if (plating.HasPlates) view.SetHp(plating.TotalHp, plating.TotalMaxHp);
-        else view.SetHp(model.Hp, model.MaxHp);
+        view.SetHp(model.Hp, model.MaxHp);
+        view.HideHp(plating, plating.HasPlates);
+        for (int i = 0; i < view.PlateSlotCount; i++) view.SetPlateHp(i, null);
+        foreach (var plate in plating.Plates)
+            view.SetPlateHp(plate.Slot, plate.MaxHp > 0 ? (float)plate.Hp / plate.MaxHp : 0f);
     }
 
     private void OnHpChanged(int hp) => RefreshHp();
@@ -164,6 +168,7 @@ public class LocomotivePresenter : IDisposable
     private void OnSelectedChanged(MachineConfig machine)
     {
         view.ShowWelderCell(machine != null && model.CanPlaceWelder(machine));
+        view.ShowPlateCells(machine != null && machine.action == MachineAction.Plating && !model.IsDestroyed);
         if (view.IsWelderSlotHovered) UpdatePreview();
         if (view.HoveredPlateSlot.HasValue) UpdatePlatePreview(view.HoveredPlateSlot.Value);
     }
