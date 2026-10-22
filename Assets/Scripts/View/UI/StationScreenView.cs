@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Экран станции: вагоны в ряд по центру экрана, над каждым стрелка, внизу кнопка «уехать».
-// Лежит под камерой (ZoomRoot), поэтому всегда в одном месте экрана. Пока открыт, поезд и меню спрятаны,
-// интерфейс перекрашен в белое (UiPalette). Не влезают в ширину экрана — сначала сжимаются промежутки, потом ряд чуть уменьшается.
+// Лежит под камерой (ZoomRoot), поэтому всегда в одном месте экрана. Пока открыт, поезд и меню спрятаны.
+// Не влезают в ширину экрана — сначала сжимаются промежутки, потом ряд чуть уменьшается.
 // Взяли вагон — остальные разлетаются, а снизу появляется наш состав, куда его вставить (StationTrainView).
 public class StationScreenView : MonoBehaviour
 {
@@ -40,11 +40,15 @@ public class StationScreenView : MonoBehaviour
     [Header("Уехать")]
     [SerializeField] private WorldButton leaveButton;
 
+    [Header("Награда за доставку")]
+    [SerializeField] private DeliveryRewardView reward;
+
     public event Action LeaveClicked;
 
     public bool IsOpen => root.activeSelf;
     public Sprite BlankSprite => blankSprite;
     public StationTrainView Train => train;
+    public DeliveryRewardView Reward => reward;
 
     private readonly List<StationOfferView> items = new List<StationOfferView>();
     private bool[] hiddenWasActive;
@@ -61,22 +65,23 @@ public class StationScreenView : MonoBehaviour
         if (leaveButton != null) leaveButton.Clicked += () => LeaveClicked?.Invoke();
     }
 
-    public void Show()
+    // darkAlready — экран уже затемнён прибытием: фон сразу тёмный, без своего проявления.
+    public void Show(bool darkAlready = false)
     {
         if (!root.activeSelf)
         {
-            fade = 0f;
+            fade = darkAlready ? 1f : 0f;
             HideOthers(true);
         }
         root.SetActive(true);
         PointerOverUI.Modal = transform;
-        UiPalette.SetInverted(true);
     }
 
     public void Hide()
     {
         if (root.activeSelf) HideOthers(false);
         SetInserting(false);
+        if (reward != null) reward.Hide();
         root.SetActive(false);
         afterDelay = null;
         if (PointerOverUI.Modal == transform) PointerOverUI.Modal = null;
@@ -132,6 +137,12 @@ public class StationScreenView : MonoBehaviour
         }
         items.Clear();
         Destroy(picked.gameObject);
+    }
+
+    // Пока не забрали награду за доставку, уехать нельзя.
+    public void SetLeaveVisible(bool value)
+    {
+        if (leaveButton != null) leaveButton.gameObject.SetActive(value);
     }
 
     // Шаг «куда вставить»: кнопка «уехать» прячется, снизу виден состав.

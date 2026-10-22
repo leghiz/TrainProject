@@ -18,11 +18,14 @@ public class CargoOffer
 {
     public CargoBoxConfig Box { get; }
     public WagonConfig Wagon { get; }
+    // Вагон с посылкой — обычный вагон, может выпасть с любым состоянием (ржавый, новый…).
+    public WagonCondition Condition { get; }
 
-    public CargoOffer(CargoBoxConfig box, WagonConfig wagon)
+    public CargoOffer(CargoBoxConfig box, WagonConfig wagon, WagonCondition condition = null)
     {
         Box = box;
         Wagon = wagon;
+        Condition = condition;
     }
 }
 
@@ -89,6 +92,9 @@ public class StationModel
         var pool = new List<CargoBoxConfig>();
         foreach (var box in config.cargoBoxes) if (box != null && !pool.Contains(box)) pool.Add(box);
 
+        // Выбор из двух: большой ящик одного материала и маленький другого (железный большой + деревянный маленький или наоборот).
+        if (config.cargoChoiceCount == 2 && PickPair(config, pool, random)) return;
+
         while (cargoOffers.Count < config.cargoChoiceCount && pool.Count > 0)
         {
             int index = random.Next(pool.Count);
@@ -98,8 +104,31 @@ public class StationModel
             var fitting = new List<WagonConfig>();
             foreach (var wagon in config.cargoWagons)
                 if (wagon != null && box.size.x <= wagon.size.x && box.size.y <= wagon.size.y) fitting.Add(wagon);
-            if (fitting.Count > 0) cargoOffers.Add(new CargoOffer(box, fitting[random.Next(fitting.Count)]));
+            if (fitting.Count > 0) cargoOffers.Add(new CargoOffer(box, fitting[random.Next(fitting.Count)], PickCondition(config, random)));
         }
+    }
+
+    private bool PickPair(StationConfig config, List<CargoBoxConfig> pool, Random random)
+    {
+        var bigs = new List<CargoBoxConfig>();
+        foreach (var box in pool) if (box.size.x * box.size.y >= 4) bigs.Add(box);
+        if (bigs.Count == 0) return false;
+        var big = bigs[random.Next(bigs.Count)];
+
+        var smalls = new List<CargoBoxConfig>();
+        foreach (var box in pool) if (box.size.x * box.size.y < 4 && box.material != big.material) smalls.Add(box);
+        if (smalls.Count == 0) return false;
+        var small = smalls[random.Next(smalls.Count)];
+
+        var pair = random.Next(2) == 0 ? new[] { big, small } : new[] { small, big };
+        foreach (var box in pair)
+        {
+            var fitting = new List<WagonConfig>();
+            foreach (var wagon in config.cargoWagons)
+                if (wagon != null && box.size.x <= wagon.size.x && box.size.y <= wagon.size.y) fitting.Add(wagon);
+            if (fitting.Count > 0) cargoOffers.Add(new CargoOffer(box, fitting[random.Next(fitting.Count)], PickCondition(config, random)));
+        }
+        return cargoOffers.Count == 2;
     }
 
     private WagonModel CreateWagon(WagonOffer offer) =>

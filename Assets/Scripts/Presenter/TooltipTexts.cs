@@ -32,12 +32,14 @@ public static class TooltipTexts
         return string.Join("\n", lines);
     }
 
+    // Ящик посылки: довезти до Грузовой или разобрать (держать ПКМ).
     public static TooltipContent Box(CargoBoxModel box) => new TooltipContent
     {
-        Title = box.Config.displayName,
+        IsBox = true,
+        Title = "Delivery",
+        Info = "Deliver or break.",
         Hp = box.Hp,
-        MaxHp = box.Config.maxHp,
-        Info = $"reward: {box.Config.rewardIngots} ingots"
+        MaxHp = box.Config.maxHp
     };
 
     // Посылка на станции: какой ящик, куда везти и сколько дадут.
@@ -74,6 +76,13 @@ public static class TooltipTexts
             Info = info
         };
         FillMachine(ref content, config, machine.Trait, machine.Progress);
+        // Сварка тратит себя, пока чинит: её полоска хп и заливка квадратика — сколько заряда осталось.
+        if (machine.HasCharge)
+        {
+            content.Hp = machine.ChargeLeft;
+            content.MaxHp = config.charge;
+            content.Progress = Mathf.Clamp01((float)machine.ChargeLeft / config.charge);
+        }
         return content;
     }
 

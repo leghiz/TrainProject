@@ -30,8 +30,22 @@ public class TooltipView : MonoBehaviour
     [Tooltip("Отдельный тултип для станка: если задан, станок показывается в нём вместо общего")]
     [SerializeField] private MachineTooltipView machineTooltip;
 
+    [Header("Ящик посылки (можно не заполнять)")]
+    [Tooltip("Отдельный тултип для ящика: если задан, ящик показывается в нём вместо общего")]
+    [SerializeField] private BoxTooltipView boxTooltip;
+
     public void Show(TooltipContent content, Vector3 anchor)
     {
+        if (content.IsBox && boxTooltip != null)
+        {
+            root.SetActive(false);
+            if (wagonTooltip != null) wagonTooltip.Hide();
+            if (machineTooltip != null) machineTooltip.Hide();
+            boxTooltip.Show(content, anchor);
+            return;
+        }
+        if (boxTooltip != null) boxTooltip.Hide();
+
         if (content.IsWagon && wagonTooltip != null)
         {
             root.SetActive(false);
@@ -69,6 +83,7 @@ public class TooltipView : MonoBehaviour
         root.SetActive(false);
         if (wagonTooltip != null) wagonTooltip.Hide();
         if (machineTooltip != null) machineTooltip.Hide();
+        if (boxTooltip != null) boxTooltip.Hide();
     }
     
     private void KeepOnScreen()

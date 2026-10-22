@@ -23,4 +23,11 @@ public class CargoBoxConfig : ScriptableObject
 
     [Tooltip("Сколько слитков дают, если довезти")]
     [Min(0)] public int rewardIngots = 5;
+
+    [Header("Что внутри")]
+    [Tooltip("Разобрали ящик (держать ПКМ) — выпадают все эти станки, у каждого случайное свойство")]
+    [Expandable] public MachineConfig[] disassemblyMachines;
+
+    [Tooltip("Довезли — кроме слитков дают один случайный станок из этого списка, со случайным свойством")]
+    [Expandable] public MachineConfig[] deliveryMachines;
 }

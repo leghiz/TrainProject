@@ -155,7 +155,11 @@ public class StationOfferView : MonoBehaviour
             if (over) Hovered?.Invoke();
             else Unhovered?.Invoke();
         }
-        if (over && interactable && mouse.leftButton.wasPressedThisFrame) Clicked?.Invoke();
+        if (over && interactable && mouse.leftButton.wasPressedThisFrame)
+        {
+            AudioView.Pickup();
+            Clicked?.Invoke();
+        }
     }
 
     private void LateUpdate()

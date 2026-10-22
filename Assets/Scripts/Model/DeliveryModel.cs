@@ -1,12 +1,33 @@
 using System;
 using System.Collections.Generic;
 
+// Награда за довезённый ящик: ждёт на экране станции, пока игрок не заберёт станок и слитки.
+public class DeliveryReward
+{
+    public CargoBoxConfig Box { get; }
+    public int Ingots { get; }
+    public MachineConfig Machine { get; }
+    public MachineTrait Trait { get; }
+    public bool IngotsTaken { get; set; }
+    public bool MachineTaken { get; set; }
+    public bool IsDone => IngotsTaken && (MachineTaken || Machine == null);
+
+    public DeliveryReward(CargoBoxConfig box, int ingots, MachineConfig machine, MachineTrait trait)
+    {
+        Box = box;
+        Ingots = ingots;
+        Machine = machine;
+        Trait = trait;
+    }
+}
+
 public class DeliveryModel
 {
     public CargoBoxModel Box { get; private set; }
     public WagonModel Wagon { get; private set; }
     public int DestinationColumn { get; private set; }
     public bool IsActive => Box != null;
+    public DeliveryReward Reward { get; private set; }
 
     public event Action Started;
     public event Action<int> Delivered;
@@ -22,35 +43,49 @@ public class DeliveryModel
         Started?.Invoke();
     }
     
-    public bool TryDeliver(MapNode node, StationConfig deliveryStation, ResourceStorageModel storage)
+    // Довезли: ящик пропадает, а награда (слитки и случайный станок) ждёт игрока на экране станции.
+    public bool TryDeliver(MapNode node, StationConfig deliveryStation, IList<MachineTrait> traits, Random random)
     {
         if (!IsActive || node.Column != DestinationColumn || node.Station != deliveryStation) return false;
 
-        int reward = Box.Config.rewardIngots;
+        var config = Box.Config;
+        var machines = config.deliveryMachines;
+        var machine = machines != null && machines.Length > 0 ? machines[random.Next(machines.Length)] : null;
         RemoveBoxQuietly();
-        storage.Add(ResourceType.Ingot, reward);
-        Delivered?.Invoke(reward);
+        Reward = new DeliveryReward(config, config.rewardIngots, machine, machine != null ? RandomTrait(traits, random) : null);
+        Delivered?.Invoke(config.rewardIngots);
         return true;
     }
+
+    public void ClearReward() => Reward = null;
     
     public void CheckMissed(MapNode node)
     {
         if (IsActive && node.Column >= DestinationColumn) Fail("не довезли до Грузовой");
     }
     
-    public bool Disassemble(IList<MachineConfig> machines, IList<MachineTrait> traits, Random random,
-                            out MachineConfig machine, out MachineTrait trait)
+    // Разобрали ящик: выпадают все станки из его списка (если список пуст — один случайный из запасного), у каждого случайное свойство.
+    public bool Disassemble(IList<MachineConfig> fallback, IList<MachineTrait> traits, Random random,
+                            List<(MachineConfig machine, MachineTrait trait)> result)
     {
-        machine = null;
-        trait = null;
-        if (!IsActive || machines == null || machines.Count == 0) return false;
+        if (!IsActive) return false;
+        var own = Box.Config.disassemblyMachines;
+        if (own != null && own.Length > 0)
+        {
+            foreach (var machine in own)
+                if (machine != null) result.Add((machine, RandomTrait(traits, random)));
+        }
+        else if (fallback != null && fallback.Count > 0)
+            result.Add((fallback[random.Next(fallback.Count)], RandomTrait(traits, random)));
+        if (result.Count == 0) return false;
 
-        machine = machines[random.Next(machines.Count)];
-        if (traits != null && traits.Count > 0) trait = traits[random.Next(traits.Count)];
         RemoveBoxQuietly();
-        Disassembled?.Invoke(machine, trait);
+        foreach (var item in result) Disassembled?.Invoke(item.machine, item.trait);
         return true;
     }
+
+    private static MachineTrait RandomTrait(IList<MachineTrait> traits, Random random) =>
+        traits != null && traits.Count > 0 ? traits[random.Next(traits.Count)] : null;
 
     private void OnBoxRemoved(CargoBoxModel box)
     {

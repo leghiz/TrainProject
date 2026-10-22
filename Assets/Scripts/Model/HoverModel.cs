@@ -17,6 +17,7 @@ public struct TooltipContent
     public int Scrap;
 
     public bool IsMachine;
+    public bool IsBox;
     public bool Beside;
     public Vector2 Size;
     public bool HasResource;
