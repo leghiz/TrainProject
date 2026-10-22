@@ -23,6 +23,15 @@ public class Game : MonoBehaviour
     [SerializeField] private TooltipView tooltipView;
     [SerializeField] private TrainMotionView trainMotion;
     [SerializeField] private WeatherView weatherView;
+    [SerializeField] private AudioView audioView;
+
+    [Header("Обучение")]
+    [Tooltip("В начале: верстак → станок, который добывает дерево → поставить в вагон → коптильня → подкинуть дров. Пока не пройдено, путь стоит")]
+    [SerializeField] private bool tutorial = true;
+    [Tooltip("Сколько дерева станок добывает в обучении, прежде чем подсветится коптильня")]
+    [SerializeField, Min(1)] private int tutorialWood = 3;
+    [Tooltip("Белая стрелка над тем, что надо нажать")]
+    [SerializeField] private TutorialArrowView tutorialArrow;
 
     [Header("Разборка (удержание ПКМ над станком или ящиком)")]
     [Tooltip("Сколько секунд держать ПКМ, чтобы разобрать")]
@@ -32,6 +41,9 @@ public class Game : MonoBehaviour
     [SerializeField] private ResourcePanelView resourcePanel;
     [SerializeField] private WorkbenchPanelView workbenchPanel;
     [SerializeField] private BoilerMenuView boilerMenu;
+    [SerializeField] private FoundryMenuView foundryMenu;
+    [SerializeField] private JourneyProgressView journeyProgress;
+    [SerializeField] private ArrivalView arrival;
     [SerializeField] private MapScreenView mapScreen;
     [SerializeField] private StationScreenView stationScreen;
 
@@ -45,6 +57,7 @@ public class Game : MonoBehaviour
     private readonly ResourceStorageModel storage = new ResourceStorageModel();
     private readonly HoverModel hover = new HoverModel();
     private readonly CargoSelectionModel cargoSelection = new CargoSelectionModel();
+    private readonly MachineMenuModel machineMenu = new MachineMenuModel();
 
     private LocomotiveModel locomotive;
     private TrainModel train;
@@ -67,6 +80,10 @@ public class Game : MonoBehaviour
     private TrainMotionPresenter trainMotionPresenter;
     private WeatherPresenter weatherPresenter;
     private BoilerMenuPresenter boilerMenuPresenter;
+    private FoundryMenuPresenter foundryMenuPresenter;
+    private JourneyProgressPresenter journeyProgressPresenter;
+    private TutorialPresenter tutorialPresenter;
+    private AudioPresenter audioPresenter;
 
     // Удержание ПКМ: IsActive, Progress (0..1) и событие Changed — для кружка прогресса.
     public DismantleModel Dismantle { get; private set; }
@@ -78,10 +95,10 @@ public class Game : MonoBehaviour
         Dismantle = new DismantleModel(dismantleHoldSeconds);
         locomotive = new LocomotiveModel(locomotiveConfig);
         train = new TrainModel(locomotive);
-        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover, cargoSelection, Dismantle);
+        trainPresenter = new TrainPresenter(train, trainView, build, storage, hover, cargoSelection, Dismantle, machineMenu);
         AttachStartWagon();
 
-        workbench = new WorkbenchModel(locomotiveConfig.recipes, storage);
+        workbench = new WorkbenchModel(locomotiveConfig.recipes, storage, journeyConfig.disassemblyTraits, journeyConfig.craftTraitChance);
         workbenchPresenter = new WorkbenchPresenter(workbench, storage, build, trainView.Locomotive, workbenchPanel, hover);
         boilerMenuPresenter = new BoilerMenuPresenter(locomotive, train, storage, build, trainView.Locomotive, boilerMenu);
         handPresenter = new HandPresenter(build, handView);
@@ -96,10 +113,20 @@ public class Game : MonoBehaviour
         journeyPresenter = new JourneyPresenter(journey, trainView);
         trainMotionPresenter = new TrainMotionPresenter(journey, train, trainMotion);
         weatherPresenter = new WeatherPresenter(journey, weatherView);
+        if (audioView != null) audioPresenter = new AudioPresenter(journey, train, build, audioView);
         tooltipPresenter = new TooltipPresenter(hover, tooltipView);
+        if (foundryMenu != null) foundryMenuPresenter = new FoundryMenuPresenter(machineMenu, journey, build, storage, hover, foundryMenu);
         mapScreenPresenter = new MapScreenPresenter(journey, mapScreen);
-        stationScreenPresenter = new StationScreenPresenter(journey, stationScreen, hover);
+        stationScreenPresenter = new StationScreenPresenter(journey, stationScreen, hover, arrival, build);
+        if (journeyProgress != null) journeyProgressPresenter = new JourneyProgressPresenter(journey, journeyProgress);
         disassemblePresenter = new DisassemblePresenter(cargoSelection, journey, workbench);
+        if (tutorial)
+        {
+            var rig = Camera.main != null ? Camera.main.GetComponent<CameraRig>() : null;
+            tutorialPresenter = new TutorialPresenter(journey, workbench, build, storage, trainView,
+                                                      workbenchPanel, boilerMenu, tutorialArrow, rig, stormView.transform, tutorialWood,
+                                                      () => { if (rig != null) rig.ZoomOutFully(); });
+        }
         journey.StateChanged += OnStateChanged;
     }
 
@@ -113,6 +140,9 @@ public class Game : MonoBehaviour
         Dismantle.Tick(Time.deltaTime);
         tooltipPresenter.Tick();
         boilerMenuPresenter.Tick();
+        foundryMenuPresenter?.Tick();
+        journeyProgressPresenter?.Tick();
+        tutorialPresenter?.Tick();
     }
 
     private void AttachStartWagon()
@@ -136,7 +166,11 @@ public class Game : MonoBehaviour
     {
         if (journey != null) journey.StateChanged -= OnStateChanged;
         weatherPresenter?.Dispose();
+        audioPresenter?.Dispose();
         boilerMenuPresenter?.Dispose();
+        foundryMenuPresenter?.Dispose();
+        journeyProgressPresenter?.Dispose();
+        tutorialPresenter?.Dispose();
         disassemblePresenter?.Dispose();
         dismantlePresenter?.Dispose();
         stationScreenPresenter?.Dispose();
